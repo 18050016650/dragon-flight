@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D神龙飞行</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
+    body { overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+    #game-container { width: 100vw; height: 100vh; position: relative; }
+    canvas { display: block; }
+    
+    /* 开始界面 */
+    #start-screen {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #1a0a4e 0%, #0a0a2e 50%, #000 100%);
+      z-index: 100;
+      padding: 20px;
+    }
+    
+    .main-title {
+      font-size: clamp(36px, 10vw, 64px); font-weight: bold; color: #ffd700;
+      text-shadow: 0 0 30px #ff6b00, 0 0 60px #ff00ff;
+      margin-bottom: 10px;
+      animation: glow 2s ease-in-out infinite alternate;
+      text-align: center;
+    }
+    
+    @keyframes glow {
+      from { text-shadow: 0 0 30px #ff6b00, 0 0 60px #ff00ff; }
+      to { text-shadow: 0 0 50px #ffd700, 0 0 80px #ff00ff, 0 0 100px #00ffff; }
+    }
+    
+    .sub-title {
+      font-size: clamp(14px, 4vw, 20px); color: #00ffff;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px #00ffff;
+    }
+    
+    .info-box {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,215,0,0.3);
+      border-radius: 15px;
+      padding: 20px 25px;
+      margin-bottom: 15px;
+      color: #fff;
+      max-width: 90vw;
+      width: 400px;
+    }
+    
+    .info-box h3 {
+      color: #ffd700;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    
+    .info-box p {
+      margin: 6px 0;
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    .start-btn {
+      padding: 15px 50px;
+      font-size: 20px; font-weight: bold;
+      color: #1a1a4e;
+      background: linear-gradient(45deg, #ffd700, #ff6b00);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(255,215,0,0.5);
+      transition: all 0.3s;
+      margin-top: 10px;
+    }
+    
+    .start-btn:hover, .start-btn:active {
+      transform: scale(1.05);
+      box-shadow: 0 0 50px rgba(255,215,0,0.8);
+    }
+    
+    /* 游戏UI */
+    #game-ui {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      display: none;
+    }
+    
+    .top-stats {
+      position: absolute; top: 15px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 10px;
+      pointer-events: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .stat-item {
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,215,0,0.3);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+      min-width: 60px;
+    }
+    
+    .stat-label { font-size: 10px; color: #aaa; text-transform: uppercase; }
+    .stat-value { font-size: 18px; font-weight: bold; color: #ffd700; }
+    
+    .boost-indicator {
+      background: linear-gradient(45deg, #ff6600, #ff3300);
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 12px;
+      animation: pulse 0.5s infinite;
+      display: none;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .boss-alert {
+      position: absolute; top: 80px; left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(45deg, #ff0000, #990000);
+      padding: 10px 25px;
+      border-radius: 8px;
+      font-size: 16px; font-weight: bold;
+      color: #fff;
+      animation: shake 0.5s infinite;
+      display: none;
+      box-shadow: 0 0 30px #ff0000;
+      white-space: nowrap;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.1); }
+    }
+    
+    /* 虚拟操纵杆 */
+    .joystick-area {
+      position: absolute;
+      left: 20px;
+      bottom: 100px;
+      width: 120px;
+      height: 120px;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    
+    .joystick-base {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,215,0,0.3);
+    }
+    
+    .joystick-stick {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd700, #ff6b00);
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 20px rgba(255,215,0,0.5);
+      transition: none;
+    }
+    
+    /* 加速按钮 */
+    .boost-btn {
+      position: absolute;
+      right: 30px;
+      bottom: 100px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff6600, #ff3300);
+      border: 3px solid rgba(255,100,0,0.5);
+      color: #fff;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 10;
+      box-shadow: 0 0 30px rgba(255,100,0,0.4);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    .boost-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 50px rgba(255,100,0,0.8);
+    }
+    
+    .boost-btn.active {
+      animation: boostPulse 0.3s infinite;
+    }
+    
+    @keyframes boostPulse {
+      0%, 100% { box-shadow: 0 0 30px rgba(255,100,0,0.6); }
+      50% { box-shadow: 0 0 50px rgba(255,150,0,0.9); }
+    }
+    
+    /* 控制按钮 */
+    .controls-right {
+      position: absolute; right: 20px; top: 80px;
+      display: flex; flex-direction: column; gap: 10px;
+      pointer-events: auto;
+    }
+    
+    .ctrl-btn {
+      width: 45px; height: 45px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,215,0,0.5);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .ctrl-btn:active {
+      background: rgba(255,215,0,0.3);
+      transform: scale(0.95);
+    }
+    
+    .ctrl-btn.shield-on {
+      background: rgba(0,255,100,0.4);
+      border-color: #00ff64;
+      box-shadow: 0 0 15px #00ff64;
+    }
+    
+    /* 暂停 */
+    #pause-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.8);
+      z-index: 50;
+    }
+    
+    #pause-overlay h2 {
+      font-size: 36px; color: #00ffff;
+      text-shadow: 0 0 30px #00ffff;
+    }
+    
+    #pause-overlay p {
+      font-size: 16px; color: #aaa;
+      margin-top: 15px;
+    }
+    
+    /* 游戏结束 */
+    #game-over {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.9);
+      z-index: 200;
+    }
+    
+    #game-over h1 {
+      font-size: 48px; color: #ff0000;
+      text-shadow: 0 0 40px #ff0000;
+      margin-bottom: 15px;
+    }
+    
+    #game-over .final-score {
+      font-size: 24px; color: #ffd700;
+      margin-bottom: 10px;
+    }
+    
+    #game-over .restart-hint {
+      font-size: 14px; color: #888;
+    }
+    
+    /* 横竖屏切换按钮 */
+    .rotate-btn {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,200,255,0.5);
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 10;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .rotate-btn:active {
+      background: rgba(0,200,255,0.3);
+      transform: scale(0.9);
+    }
+
+    /* 设备适配 */
+    @media (min-width: 768px) {
+      .joystick-area { display: none; }
+      .boost-btn { display: none; }
+      .rotate-btn { display: none; }
+    }
+    
+    @media (max-width: 767px) {
+      .hints { display: none; }
+    }
+    
+    .hints {
+      position: absolute; bottom: 20px; left: 160px;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 15px;
+      border-radius: 8px;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+    }
+    
+    .hints p { margin: 3px 0; }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="canvas"></canvas>
+    
+    <!-- 开始界面 -->
+    <div id="start-screen">
+      <div class="main-title">🐉 神龙飞行</div>
+      <div class="sub-title">DRAGON FLIGHT 3D</div>
+      
+      <div class="info-box">
+        <h3>🎮 操作说明</h3>
+        <p>🖱️ 鼠标/操纵杆 - 控制飞行方向</p>
+        <p>🔥 左键/加速按钮 - 加速飞行</p>
+        <p>⌨️ 空格/暂停按钮 - 暂停</p>
+      </div>
+      
+      <div class="info-box">
+        <h3>✨ 游戏特色</h3>
+        <p>🐲 霸气东方神龙模型</p>
+        <p>👹 50分后出现BOSS</p>
+        <p>🔥 吃食物变长变强</p>
+      </div>
+      
+      <button class="start-btn" onclick="startGame()">开始游戏</button>
+    </div>
+    
+    <!-- 游戏UI -->
+    <div id="game-ui">
+      <div class="top-stats">
+        <div class="stat-item">
+          <div class="stat-label">分数</div>
+          <div class="stat-value" id="score">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">长度</div>
+          <div class="stat-value" id="length">20</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">能量</div>
+          <div class="stat-value" id="power">0%</div>
+        </div>
+        <div class="boost-indicator" id="boost">🔥 BOOST</div>
+      </div>
+      
+      <div class="boss-alert" id="boss-warning">⚠️ BOSS 出现 ⚠️</div>
+      
+      <!-- 虚拟操纵杆 (仅手机显示) -->
+      <div class="joystick-area" id="joystick">
+        <div class="joystick-base"></div>
+        <div class="joystick-stick" id="joystick-stick"></div>
+      </div>
+      
+      <!-- 加速按钮 (仅手机显示) -->
+      <div class="boost-btn" id="boost-btn">🔥</div>
+
+      <!-- 横竖屏切换 (仅手机显示) -->
+      <div class="rotate-btn" id="rotate-btn" onclick="toggleOrientation()">🔄</div>
+      
+      <!-- 控制按钮 -->
+      <div class="controls-right">
+        <button class="ctrl-btn" id="pause-btn" onclick="togglePause()">⏸</button>
+        <button class="ctrl-btn" id="shield-btn" onclick="toggleShield()">🛡</button>
+      </div>
+      
+      <div class="hints">
+        <p>🖱️ 移动鼠标控制方向</p>
+        <p>🖱️ 左键按住加速</p>
+        <p>⌨️ 空格暂停</p>
+      </div>
+    </div>
+    
+    <!-- 暂停 -->
+    <div id="pause-overlay" onclick="togglePause()">
+      <h2>⏸ 游戏暂停</h2>
+      <p>点击继续</p>
+    </div>
+    
+    <!-- 游戏结束 -->
+    <div id="game-over" onclick="location.reload()">
+      <h1>💀 游戏结束</h1>
+      <div class="final-score">最终分数: <span id="final-score">0</span></div>
+      <div class="restart-hint">点击重新开始</div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // 游戏状态
+    const state = {
+      playing: false, paused: false, score: 0, shield: false,
+      mouse: { x: 0, y: 0 }, boosting: false,
+      joystick: { active: false, dx: 0, dy: 0 },
+      dragon: {
+        pos: new THREE.Vector3(0, 0, 0),
+        dir: new THREE.Vector3(0, 0, 1),
+        targetDir: new THREE.Vector3(0, 0, 1),
+        speed: 0.15, length: 20
+      },
+      foods: [], boss: null, bullets: [],
+      bodySegments: []
+    };
+
+    // 检测是否为触摸设备
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    // Three.js 初始化
+    const canvas = document.getElementById('canvas');
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0a0a2e, 0.008);
+    
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    scene.add(new THREE.AmbientLight(0x404040, 0.5));
+    const light = new THREE.DirectionalLight(0xffffff, 0.8);
+    light.position.set(10, 20, 10);
+    scene.add(light);
+
+    // 星空
+    const starsGeo = new THREE.BufferGeometry();
+    const starsPos = [];
+    for (let i = 0; i < 3000; i++) {
+      starsPos.push((Math.random()-0.5)*400, (Math.random()-0.5)*400, (Math.random()-0.5)*400);
+    }
+    starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsPos, 3));
+    const starsMesh = new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 }));
+    scene.add(starsMesh);
+
+    // 龙组
+    const dragonGroup = new THREE.Group();
+    scene.add(dragonGroup);
+    
+    // 创建龙头
+    function createHead() {
+      const head = new THREE.Group();
+      
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(1.8, 1.4, 2.2),
+        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.15, emissive: 0xff6600, emissiveIntensity: 0.15 })
+      );
+      head.add(body);
+      
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 3 });
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
+      leftEye.position.set(-0.7, 0.3, 0.4);
+      head.add(leftEye);
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
+      rightEye.position.set(0.7, 0.3, 0.4);
+      head.add(rightEye);
+      
+      const antlerMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+      const antlerGeo = new THREE.CylinderGeometry(0.1, 0.15, 1.8, 8);
+      const leftAntler = new THREE.Mesh(antlerGeo, antlerMat);
+      leftAntler.position.set(-0.6, 1.5, -0.4);
+      leftAntler.rotation.z = -0.4;
+      head.add(leftAntler);
+      const rightAntler = new THREE.Mesh(antlerGeo, antlerMat);
+      rightAntler.position.set(0.6, 1.5, -0.4);
+      rightAntler.rotation.z = 0.4;
+      head.add(rightAntler);
+      
+      return head;
+    }
+    
+    const dragonHead = createHead();
+    dragonGroup.add(dragonHead);
+    
+    // 创建龙身节段
+    function createSegment(index, total) {
+      const progress = index / total;
+      const scale = Math.max(0.4, 1 - progress * 0.6);
+      const color = new THREE.Color(0xffd700).lerp(new THREE.Color(0xff4500), progress * 0.5);
+      
+      const seg = new THREE.Group();
+      
+      const bodyGeo = new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 12);
+      bodyGeo.rotateX(Math.PI/2);
+      const body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ 
+        color: color, metalness: 0.8, roughness: 0.2, emissive: color, emissiveIntensity: 0.1 
+      }));
+      seg.add(body);
+      
+      for (let i = 0; i < 3; i++) {
+        const spine = new THREE.Mesh(
+          new THREE.ConeGeometry(scale*0.25, scale*0.5, 4),
+          new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 0.3 })
+        );
+        spine.position.set(0, scale*0.6, (i-1)*0.2);
+        spine.rotation.x = -Math.PI/6;
+        seg.add(spine);
+      }
+      
+      return seg;
+    }
+    
+    function initBody() {
+      state.bodySegments.forEach(s => dragonGroup.remove(s.mesh));
+      state.bodySegments = [];
+      
+      for (let i = 0; i < state.dragon.length; i++) {
+        const seg = createSegment(i, state.dragon.length);
+        seg.position.set(0, 0, -i*0.8);
+        dragonGroup.add(seg);
+        state.bodySegments.push({ mesh: seg, pos: new THREE.Vector3(0, 0, -i*0.8) });
+      }
+    }
+
+    // 食物
+    const foodGroup = new THREE.Group();
+    scene.add(foodGroup);
+    
+    function createFood() {
+      const food = new THREE.Group();
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1.2, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2 })
+      );
+      food.add(mesh);
+      return food;
+    }
+    
+    function spawnFood() {
+      const food = createFood();
+      const angle = (Math.random() - 0.5) * Math.PI * 0.8;
+      const radius = 15 + Math.random() * 25;
+      const dist = 40 + Math.random() * 60;
+      
+      const pos = {
+        x: state.dragon.pos.x + Math.sin(angle) * radius,
+        y: Math.max(-20, Math.min(20, (Math.random()-0.5)*30)),
+        z: state.dragon.pos.z + Math.cos(angle) * dist
+      };
+      
+      food.position.set(pos.x, pos.y, pos.z);
+      foodGroup.add(food);
+      state.foods.push({ mesh: food, pos: pos });
+    }
+    
+    function updateFoods() {
+      for (let i = state.foods.length - 1; i >= 0; i--) {
+        if (state.foods[i].pos.z - state.dragon.pos.z < -30) {
+          foodGroup.remove(state.foods[i].mesh);
+          state.foods.splice(i, 1);
+        }
+      }
+      while (state.foods.length < 10) spawnFood();
+    }
+
+    // BOSS
+    const bossGroup = new THREE.Group();
+    scene.add(bossGroup);
+    const bulletGroup = new THREE.Group();
+    scene.add(bulletGroup);
+    
+    function createBoss() {
+      const boss = new THREE.Group();
+      const body = new THREE.Mesh(
+        new THREE.SphereGeometry(4, 32, 32),
+        new THREE.MeshStandardMaterial({ color: 0x2a0033, emissive: 0x6600ff, emissiveIntensity: 0.3 })
+      );
+      boss.add(body);
+      
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 5 });
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), eyeMat);
+      leftEye.position.set(-1.5, 0.5, 3);
+      boss.add(leftEye);
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), eyeMat);
+      rightEye.position.set(1.5, 0.5, 3);
+      boss.add(rightEye);
+      
+      return boss;
+    }
+    
+    function spawnBoss() {
+      if (state.boss) return;
+      const boss = createBoss();
+      boss.position.set(state.dragon.pos.x, state.dragon.pos.y + 10, state.dragon.pos.z + 150);
+      bossGroup.add(boss);
+      state.boss = { mesh: boss, pos: boss.position.clone(), lastShot: 0 };
+      
+      document.getElementById('boss-warning').style.display = 'block';
+      setTimeout(() => document.getElementById('boss-warning').style.display = 'none', 5000);
+    }
+    
+    function createBullet(pos, dir) {
+      const bullet = new THREE.Mesh(
+        new THREE.SphereGeometry(0.8, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 3 })
+      );
+      bullet.position.copy(pos);
+      bulletGroup.add(bullet);
+      state.bullets.push({ mesh: bullet, pos: pos.clone(), dir: dir.clone().normalize(), speed: 0.18, homing: true });
+    }
+    
+    function updateBoss(dt) {
+      if (!state.boss) return;
+      const boss = state.boss;
+      const d = state.dragon;
+      const time = Date.now() * 0.001;
+      
+      const targetX = d.pos.x + d.dir.x * 100;
+      const targetZ = d.pos.z + d.dir.z * 100;
+      boss.pos.x += (targetX - boss.pos.x) * 0.02;
+      boss.pos.z += (targetZ - boss.pos.z) * 0.02;
+      boss.pos.y = d.pos.y + 15 + Math.sin(time) * 5;
+      boss.mesh.position.copy(boss.pos);
+      boss.mesh.lookAt(d.pos);
+      
+      const now = Date.now();
+      if (now - boss.lastShot > 800) {
+        boss.lastShot = now;
+        const toDragon = new THREE.Vector3().subVectors(d.pos, boss.pos).normalize();
+        for (let i = -1; i <= 1; i++) {
+          const bulletDir = toDragon.clone();
+          bulletDir.x += i * 0.2;
+          bulletDir.normalize();
+          createBullet(boss.pos.clone(), bulletDir);
+        }
+      }
+    }
+    
+    function updateBullets(dt) {
+      const dragon = state.dragon;
+      for (let i = state.bullets.length - 1; i >= 0; i--) {
+        const b = state.bullets[i];
+        
+        if (b.homing) {
+          const toDragon = new THREE.Vector3().subVectors(dragon.pos, b.pos).normalize();
+          b.dir.lerp(toDragon, 0.03);
+          b.dir.normalize();
+        }
+        
+        b.pos.add(b.dir.clone().multiplyScalar(b.speed * dt * 60));
+        b.mesh.position.copy(b.pos);
+        
+        if (!state.shield && b.pos.distanceTo(dragon.pos) < 2.5) {
+          gameOver();
+          return;
+        }
+        
+        if (b.pos.distanceTo(dragon.pos) > 200) {
+          bulletGroup.remove(b.mesh);
+          state.bullets.splice(i, 1);
+        }
+      }
+    }
+    
+    function gameOver() {
+      state.playing = false;
+      document.getElementById('final-score').textContent = state.score;
+      document.getElementById('game-over').style.display = 'flex';
+    }
+
+    // 游戏逻辑
+    function updateDragon(dt) {
+      const d = state.dragon;
+      
+      let targetX, targetY;
+      
+      // 优先使用操纵杆，否则使用鼠标
+      if (state.joystick.active) {
+        // 与鼠标保持一致：屏幕右 → 场景需要-x，所以dx也要取反
+        targetX = -state.joystick.dx * 6;
+        targetY = state.joystick.dy * 5;
+      } else {
+        targetX = -state.mouse.x * 6;
+        targetY = state.mouse.y * 5;
+      }
+      
+      d.targetDir.set(targetX, targetY, 1).normalize();
+      d.dir.lerp(d.targetDir, 0.6);
+      d.dir.normalize();
+      
+      const speed = state.boosting ? d.speed * 2.5 : d.speed;
+      d.pos.add(d.dir.clone().multiplyScalar(speed * dt * 60));
+      
+      dragonHead.position.copy(d.pos);
+      dragonHead.rotation.x = Math.asin(-d.dir.y);
+      dragonHead.rotation.y = Math.atan2(d.dir.x, d.dir.z);
+      
+      for (let i = 0; i < state.bodySegments.length; i++) {
+        const seg = state.bodySegments[i];
+        let targetPos;
+        
+        if (i === 0) {
+          targetPos = d.pos.clone().add(d.dir.clone().multiplyScalar(-0.7));
+        } else {
+          const prev = state.bodySegments[i-1];
+          const dir = prev.pos.clone().sub(seg.pos).normalize();
+          targetPos = prev.pos.clone().add(dir.multiplyScalar(-0.7));
+        }
+        
+        seg.pos.lerp(targetPos, 0.25);
+        seg.mesh.position.copy(seg.pos);
+        if (i > 0) seg.mesh.lookAt(state.bodySegments[i-1].pos);
+      }
+    }
+    
+    function checkCollisions() {
+      for (let i = state.foods.length - 1; i >= 0; i--) {
+        const food = state.foods[i];
+        const dist = state.dragon.pos.distanceTo(new THREE.Vector3(food.pos.x, food.pos.y, food.pos.z));
+        if (dist < 3) eatFood(i);
+      }
+    }
+    
+    function eatFood(index) {
+      foodGroup.remove(state.foods[index].mesh);
+      state.foods.splice(index, 1);
+      
+      state.score += 10;
+      state.dragon.length += 2;
+      
+      const seg = createSegment(state.bodySegments.length, state.dragon.length);
+      const last = state.bodySegments[state.bodySegments.length-1];
+      const dir = last.pos.clone().sub(state.bodySegments.length>1 ? state.bodySegments[state.bodySegments.length-2].pos : state.dragon.pos).normalize();
+      const newPos = last.pos.clone().add(dir.multiplyScalar(-0.7));
+      seg.position.copy(newPos);
+      dragonGroup.add(seg);
+      state.bodySegments.push({ mesh: seg, pos: newPos.clone() });
+      
+      updateUI();
+    }
+
+    // 相机
+    function updateCamera() {
+      const d = state.dragon;
+      const dist = Math.max(15, d.length * 0.6);
+      const height = Math.max(8, d.length * 0.3);
+      
+      const target = new THREE.Vector3(
+        d.pos.x - d.dir.x * dist * 0.5,
+        d.pos.y + height,
+        d.pos.z - dist
+      );
+      
+      camera.position.lerp(target, 0.1);
+      camera.lookAt(d.pos.x + d.dir.x*5, d.pos.y, d.pos.z + d.dir.z*5);
+    }
+
+    // UI更新
+    function updateUI() {
+      document.getElementById('score').textContent = state.score;
+      document.getElementById('length').textContent = state.dragon.length;
+      const power = Math.min(100, (state.dragon.length / 200) * 100);
+      document.getElementById('power').textContent = Math.floor(power) + '%';
+      document.getElementById('boost').style.display = state.boosting ? 'block' : 'none';
+    }
+
+    // 游戏控制
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game-ui').style.display = 'block';
+      
+      state.playing = true;
+      state.score = 0;
+      state.dragon.length = 20;
+      state.dragon.pos.set(0, 0, 0);
+      state.dragon.dir.set(0, 0, 1);
+      
+      initBody();
+      updateUI();
+      
+      lastTime = performance.now();
+      gameLoop();
+    }
+    
+    function togglePause() {
+      state.paused = !state.paused;
+      const overlay = document.getElementById('pause-overlay');
+      const btn = document.getElementById('pause-btn');
+      
+      if (state.paused) {
+        overlay.style.display = 'flex';
+        btn.textContent = '▶';
+      } else {
+        overlay.style.display = 'none';
+        btn.textContent = '⏸';
+        lastTime = performance.now();
+      }
+    }
+    
+    function toggleShield() {
+      state.shield = !state.shield;
+      const btn = document.getElementById('shield-btn');
+      btn.className = state.shield ? 'ctrl-btn shield-on' : 'ctrl-btn';
+    }
+
+    // 横竖屏切换
+    function toggleOrientation() {
+      if (!screen.orientation || !screen.orientation.lock) {
+        // 降级方案：通过CSS旋转整个容器来模拟横屏
+        const container = document.getElementById('game-container');
+        const isLandscape = container.style.transform === 'rotate(90deg)';
+        if (isLandscape) {
+          container.style.transform = '';
+          container.style.width = '100vw';
+          container.style.height = '100vh';
+          container.style.position = 'fixed';
+          container.style.top = '0';
+          container.style.left = '0';
+        } else {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          if (w < h) {
+            // 当前竖屏，旋转为横屏
+            container.style.transform = 'rotate(90deg)';
+            container.style.transformOrigin = `${h/2}px ${h/2}px`;
+            container.style.width = h + 'px';
+            container.style.height = w + 'px';
+            container.style.position = 'fixed';
+            container.style.top = `${-(h-w)/2}px`;
+            container.style.left = `${(h-w)/2}px`;
+          } else {
+            // 当前横屏，旋转为竖屏
+            container.style.transform = 'rotate(-90deg)';
+            container.style.transformOrigin = `${w/2}px ${w/2}px`;
+            container.style.width = h + 'px';
+            container.style.height = w + 'px';
+            container.style.position = 'fixed';
+            container.style.top = `${(w-h)/2}px`;
+            container.style.left = `${-(w-h)/2}px`;
+          }
+        }
+        // 重置renderer和camera
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        return;
+      }
+      // 使用原生API
+      const current = screen.orientation.type;
+      if (current.includes('portrait')) {
+        screen.orientation.lock('landscape').catch(() => {});
+      } else {
+        screen.orientation.lock('portrait').catch(() => {});
+      }
+    }
+
+    // 虚拟操纵杆
+    const joystick = document.getElementById('joystick');
+    const joystickStick = document.getElementById('joystick-stick');
+    let joystickCenter = { x: 0, y: 0 };
+    const maxJoystickDist = 35;
+
+    function initJoystick() {
+      const rect = joystick.getBoundingClientRect();
+      joystickCenter = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      };
+    }
+
+    joystick.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      initJoystick();
+      state.joystick.active = true;
+      updateJoystick(e.touches[0]);
+    }, { passive: false });
+
+    joystick.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      if (state.joystick.active) {
+        updateJoystick(e.touches[0]);
+      }
+    }, { passive: false });
+
+    joystick.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      state.joystick.active = false;
+      state.joystick.dx = 0;
+      state.joystick.dy = 0;
+      joystickStick.style.transform = 'translate(-50%, -50%)';
+    });
+
+    function updateJoystick(touch) {
+      const dx = touch.clientX - joystickCenter.x;
+      const dy = touch.clientY - joystickCenter.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const clampedDist = Math.min(dist, maxJoystickDist);
+      const angle = Math.atan2(dy, dx);
+      
+      const stickX = Math.cos(angle) * clampedDist;
+      const stickY = Math.sin(angle) * clampedDist;
+      
+      joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
+      
+      // 归一化到 -1 到 1
+      // 注意：屏幕向右 → dx正 → 角色向右；屏幕向上 → dy负 → 角色向上
+      state.joystick.dx = stickX / maxJoystickDist;          // 右正左负，直接对应X轴
+      state.joystick.dy = -(stickY / maxJoystickDist);       // 屏幕Y向下为正，取反后上正下负
+    }
+
+    // 加速按钮
+    const boostBtn = document.getElementById('boost-btn');
+    
+    boostBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      state.boosting = true;
+      boostBtn.classList.add('active');
+    }, { passive: false });
+
+    boostBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      state.boosting = false;
+      boostBtn.classList.remove('active');
+    });
+
+    // 鼠标事件 (桌面)
+    document.addEventListener('mousemove', (e) => {
+      if (!state.playing || state.paused || state.joystick.active) return;
+      state.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      state.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+    
+    document.addEventListener('mousedown', (e) => {
+      if (!state.playing) return;
+      if (e.button === 0) state.boosting = true;
+    });
+    
+    document.addEventListener('mouseup', (e) => {
+      if (e.button === 0) state.boosting = false;
+    });
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePause();
+      }
+    });
+    
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 游戏循环
+    let lastTime = performance.now();
+    
+    function gameLoop() {
+      if (!state.playing) return;
+      
+      const now = performance.now();
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+      
+      if (!state.paused) {
+        updateDragon(dt);
+        checkCollisions();
+        updateFoods();
+        
+        if (starsMesh) starsMesh.position.copy(state.dragon.pos);
+        
+        if (state.score >= 50 && !state.boss) spawnBoss();
+        
+        updateBoss(dt);
+        updateBullets(dt);
+        updateUI();
+        
+        const t = Date.now() * 0.001;
+        state.foods.forEach((f, i) => f.mesh.rotation.y = t + i);
+      }
+      
+      updateCamera();
+      renderer.render(scene, camera);
+      requestAnimationFrame(gameLoop);
+    }
+
+    // 初始渲染
+    renderer.render(scene, camera);
+  </script>
+</body>
+</html>
