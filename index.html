@@ -21,22 +21,27 @@
       position: fixed; top: 0; left: 0; z-index: 1;
     }
     
-    /* 开始界面 */
+    /* 电脑端：垂直布局（默认） */
     #start-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       background: linear-gradient(135deg, #1a0a4e 0%, #0a0a2e 50%, #000 100%);
       z-index: 1000; padding: 20px;
     }
+    .left-panel, .right-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
     .main-title { font-size: 36px; font-weight: bold; color: #ffd700; margin-bottom: 10px; text-align: center; }
     .sub-title { font-size: 14px; color: #00ffff; margin-bottom: 30px; }
+    .start-btn { padding: 18px 60px; font-size: 22px; font-weight: bold; color: #1a1a4e; background: linear-gradient(45deg, #ffd700, #ff6b00); border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; -webkit-tap-highlight-color: transparent; position: relative; z-index: 100; }
+    .start-btn:active { transform: scale(0.95); }
     .info-box { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 15px 20px; margin-bottom: 15px; color: #fff; width: 90%; max-width: 400px; }
     .info-box h3 { color: #ffd700; margin-bottom: 10px; font-size: 16px; }
     .info-box p { margin: 5px 0; font-size: 13px; color: rgba(255,255,255,0.8); }
-    .start-btn { padding: 18px 60px; font-size: 22px; font-weight: bold; color: #1a1a4e; background: linear-gradient(45deg, #ffd700, #ff6b00); border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; -webkit-tap-highlight-color: transparent; }
-    .start-btn:active { transform: scale(0.95); }
-    
-    /* 设置面板 */
     .settings-panel { background: rgba(0,0,0,0.8); border: 1px solid rgba(255,215,0,0.4); border-radius: 15px; padding: 20px; margin-bottom: 15px; width: 90%; max-width: 400px; }
     .settings-panel h3 { color: #ffd700; margin-bottom: 15px; font-size: 16px; text-align: center; }
     .setting-item { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; }
@@ -44,6 +49,37 @@
     .setting-slider { width: 150px; height: 8px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 4px; outline: none; }
     .setting-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: linear-gradient(45deg, #ffd700, #ff6b00); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
     .setting-value { color: #00ffff; font-size: 14px; min-width: 40px; text-align: right; }
+    
+    /* 手机端：强制横屏左右布局 */
+    @media (max-width: 767px) {
+      #start-screen {
+        flex-direction: row !important;
+        padding: 10px;
+      }
+      .left-panel {
+        width: 40%;
+        height: 100%;
+        padding: 10px;
+      }
+      .right-panel {
+        width: 60%;
+        height: 100%;
+        padding: 10px;
+        gap: 15px;
+      }
+      .main-title { font-size: 28px; margin-bottom: 5px; }
+      .sub-title { font-size: 12px; margin-bottom: 20px; }
+      .start-btn { padding: 15px 40px; font-size: 20px; margin-top: 10px; }
+      .info-box { padding: 12px 15px; margin-bottom: 10px; }
+      .info-box h3 { font-size: 14px; margin-bottom: 8px; }
+      .info-box p { font-size: 11px; margin: 4px 0; }
+      .settings-panel { padding: 12px; margin-bottom: 10px; }
+      .settings-panel h3 { font-size: 14px; margin-bottom: 10px; }
+      .setting-item { margin: 8px 0; }
+      .setting-label { font-size: 12px; }
+      .setting-slider { width: 100px; height: 8px; }
+      .setting-value { font-size: 12px; min-width: 35px; }
+    }
     
     /* 游戏UI */
     #game-ui { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
@@ -176,32 +212,37 @@
     
     <!-- 开始界面 -->
     <div id="start-screen">
-      <button class="rotate-btn" id="rotate-btn" title="切换横屏">🔄</button>
-      <div class="main-title">🐉 神龙飞行</div>
-      <div class="sub-title">DRAGON FLIGHT 3D</div>
-      <div class="info-box">
-        <h3>🎮 操作说明</h3>
-        <p>🕹️ 左下角摇杆 - 控制方向</p>
-        <p>🔥 右下角按钮 - 加速</p>
-        <p>⚔️ 攻击按钮 - 攻击BOSS</p>
+      <!-- 左侧：标题和开始按钮 -->
+      <div class="left-panel">
+        <div class="main-title">🐉 神龙飞行</div>
+        <div class="sub-title">DRAGON FLIGHT 3D</div>
+        <button class="start-btn" id="start-btn">开始游戏</button>
       </div>
       
-      <!-- 设置面板 -->
-      <div class="settings-panel">
-        <h3>⚙️ 游戏设置</h3>
-        <div class="setting-item">
-          <span class="setting-label">操纵灵敏度</span>
-          <input type="range" class="setting-slider" id="sensitivity-slider" min="0.5" max="3" step="0.1" value="1.5">
-          <span class="setting-value" id="sensitivity-value">1.5</span>
+      <!-- 右侧：操作说明和设置 -->
+      <div class="right-panel">
+        <div class="info-box">
+          <h3>🎮 操作说明</h3>
+          <p>🕹️ 左下角摇杆 - 控制方向</p>
+          <p>🔥 右下角按钮 - 加速</p>
+          <p>⚔️ 攻击按钮 - 攻击BOSS</p>
         </div>
-        <div class="setting-item">
-          <span class="setting-label">画质等级</span>
-          <input type="range" class="setting-slider" id="quality-slider" min="1" max="3" step="1" value="2">
-          <span class="setting-value" id="quality-value">中</span>
+        
+        <!-- 设置面板 -->
+        <div class="settings-panel">
+          <h3>⚙️ 游戏设置</h3>
+          <div class="setting-item">
+            <span class="setting-label">操纵灵敏度</span>
+            <input type="range" class="setting-slider" id="sensitivity-slider" min="0.5" max="3" step="0.1" value="1.5">
+            <span class="setting-value" id="sensitivity-value">1.5</span>
+          </div>
+          <div class="setting-item">
+            <span class="setting-label">画质等级</span>
+            <input type="range" class="setting-slider" id="quality-slider" min="1" max="3" step="1" value="2">
+            <span class="setting-value" id="quality-value">中</span>
+          </div>
         </div>
       </div>
-      
-      <button class="start-btn" id="start-btn">开始游戏</button>
     </div>
     
     <!-- 游戏UI -->
