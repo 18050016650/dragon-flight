@@ -7,368 +7,56 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { 
-      width: 100%; 
-      height: 100%; 
-      overflow: hidden; 
-      background: #000; 
-      font-family: Arial, sans-serif;
+      width: 100%; height: 100%; overflow: hidden; 
+      background: #000; font-family: Arial, sans-serif;
+      touch-action: none;
     }
     #game-container { 
-      width: 100%; 
-      height: 100%; 
-      position: fixed;
-      top: 0;
-      left: 0;
+      width: 100%; height: 100%; position: fixed; top: 0; left: 0;
     }
     canvas { 
-      display: block; 
-      width: 100% !important;
-      height: 100% !important;
+      display: block; width: 100% !important; height: 100% !important;
+      position: fixed; top: 0; left: 0; z-index: 1;
     }
     
     /* 开始界面 */
     #start-screen {
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%;
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       background: linear-gradient(135deg, #1a0a4e 0%, #0a0a2e 50%, #000 100%);
-      z-index: 100;
-      padding: 20px;
+      z-index: 1000; padding: 20px;
     }
-    
-    .main-title {
-      font-size: 36px; 
-      font-weight: bold; 
-      color: #ffd700;
-      text-shadow: 0 0 30px #ff6b00, 0 0 60px #ff00ff;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-    
-    .sub-title {
-      font-size: 14px; 
-      color: #00ffff;
-      margin-bottom: 30px;
-    }
-    
-    .info-box {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,215,0,0.3);
-      border-radius: 12px;
-      padding: 15px 20px;
-      margin-bottom: 15px;
-      color: #fff;
-      width: 90%;
-      max-width: 400px;
-    }
-    
-    .info-box h3 {
-      color: #ffd700;
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-    
-    .info-box p {
-      margin: 5px 0;
-      font-size: 13px;
-      color: rgba(255,255,255,0.8);
-    }
-    
-    .start-btn {
-      padding: 18px 60px;
-      font-size: 22px; 
-      font-weight: bold;
-      color: #1a1a4e;
-      background: linear-gradient(45deg, #ffd700, #ff6b00);
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 0 30px rgba(255,215,0,0.5);
-      margin-top: 20px;
-      touch-action: manipulation;
-    }
-    
-    .start-btn:active {
-      transform: scale(0.95);
-    }
+    .main-title { font-size: 36px; font-weight: bold; color: #ffd700; margin-bottom: 10px; text-align: center; }
+    .sub-title { font-size: 14px; color: #00ffff; margin-bottom: 30px; }
+    .info-box { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 15px 20px; margin-bottom: 15px; color: #fff; width: 90%; max-width: 400px; }
+    .info-box h3 { color: #ffd700; margin-bottom: 10px; font-size: 16px; }
+    .info-box p { margin: 5px 0; font-size: 13px; color: rgba(255,255,255,0.8); }
+    .start-btn { padding: 18px 60px; font-size: 22px; font-weight: bold; color: #1a1a4e; background: linear-gradient(45deg, #ffd700, #ff6b00); border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; -webkit-tap-highlight-color: transparent; }
+    .start-btn:active { transform: scale(0.95); }
     
     /* 游戏UI */
-    #game-ui {
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%;
-      pointer-events: none;
-      display: none;
-      z-index: 10;
-    }
-    
-    .top-stats {
-      position: absolute; 
-      top: 10px; 
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex; 
-      gap: 8px;
-      pointer-events: auto;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    
-    .stat-item {
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,215,0,0.3);
-      border-radius: 8px;
-      padding: 6px 10px;
-      text-align: center;
-      min-width: 55px;
-    }
-    
-    .stat-label { font-size: 10px; color: #aaa; }
-    .stat-value { font-size: 16px; font-weight: bold; color: #ffd700; }
-    
-    .boost-indicator, .difficulty-indicator, .shield-indicator {
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      color: #fff;
-      font-size: 11px;
-    }
-    
-    .boost-indicator {
-      background: linear-gradient(45deg, #ff6600, #ff3300);
-      display: none;
-    }
-    
-    .difficulty-indicator {
-      background: linear-gradient(45deg, #6600ff, #9900cc);
-    }
-    
-    .shield-indicator {
-      background: linear-gradient(45deg, #00ff88, #00cc66);
-    }
-    
-    .boss-health-bar {
-      position: absolute;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 180px;
-      height: 18px;
-      background: rgba(0,0,0,0.7);
-      border: 2px solid #ff0000;
-      border-radius: 9px;
-      overflow: hidden;
-      display: none;
-    }
-    
-    .boss-health-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #ff0000, #ff6600);
-      transition: width 0.3s ease;
-    }
-    
-    .boss-alert {
-      position: absolute; 
-      top: 70px; 
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(45deg, #ff0000, #990000);
-      padding: 8px 20px;
-      border-radius: 8px;
-      font-size: 14px; 
-      font-weight: bold;
-      color: #fff;
-      display: none;
-      box-shadow: 0 0 20px #ff0000;
-    }
-    
-    /* 手机控制 */
-    .mobile-controls {
-      position: absolute;
-      right: 10px;
-      bottom: 50px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      pointer-events: auto;
-      z-index: 20;
-    }
-    
-    .boost-btn, .attack-btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      border: 3px solid;
-      color: #fff;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: auto;
-      touch-action: manipulation;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-    
-    .boost-btn {
-      background: linear-gradient(135deg, #ff6600, #ff3300);
-      border-color: rgba(255,100,0,0.5);
-    }
-    
-    .attack-btn {
-      background: linear-gradient(135deg, #ff0000, #990000);
-      border-color: rgba(255,0,0,0.5);
-      display: none;
-    }
-    
-    .boost-btn:active, .attack-btn:active {
-      transform: scale(0.9);
-    }
+    #game-ui { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+    .top-stats { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 101; }
+    .stat-item { background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,215,0,0.3); }
+    .stat-label { font-size: 11px; color: #aaa; }
+    .stat-value { font-size: 16px; color: #ffd700; font-weight: bold; }
     
     /* 控制按钮 */
-    .controls-right {
-      position: absolute; 
-      right: 10px; 
-      top: 70px;
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px;
-      pointer-events: auto;
-      z-index: 20;
-    }
+    .mobile-controls { position: absolute; bottom: 80px; right: 20px; display: none; flex-direction: column; gap: 15px; pointer-events: auto; }
+    .control-btn { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .boost-btn { background: linear-gradient(45deg, #ff6b00, #ff0000); box-shadow: 0 0 20px rgba(255,107,0,0.5); }
+    .attack-btn { background: linear-gradient(45deg, #00ffff, #0099ff); box-shadow: 0 0 20px rgba(0,255,255,0.5); }
+    .control-btn:active { transform: scale(0.9); }
     
-    .ctrl-btn {
-      width: 42px; 
-      height: 42px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,215,0,0.5);
-      background: rgba(0,0,0,0.7);
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      touch-action: manipulation;
-    }
+    /* 暂停/结束界面 */
+    #pause-overlay, #game-over { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; align-items: center; justify-content: center; color: #fff; pointer-events: auto; }
+    #pause-overlay h2 { font-size: 32px; margin-bottom: 15px; }
+    #game-over h1 { font-size: 42px; color: #ff0000; margin-bottom: 15px; }
+    .final-score { font-size: 22px; color: #ffd700; }
     
-    .ctrl-btn:active {
-      background: rgba(255,215,0,0.3);
-    }
-    
-    .ctrl-btn.shield-on {
-      background: rgba(0,255,100,0.4);
-      border-color: #00ff64;
-    }
-    
-    /* 暂停 */
-    #pause-overlay {
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%;
-      display: none; 
-      flex-direction: column;
-      align-items: center; 
-      justify-content: center;
-      background: rgba(0,0,0,0.85);
-      z-index: 50;
-    }
-    
-    #pause-overlay h2 {
-      font-size: 32px; 
-      color: #00ffff;
-    }
-    
-    /* 游戏结束 */
-    #game-over {
-      position: fixed; 
-      top: 0; 
-      left: 0; 
-      width: 100%; 
-      height: 100%;
-      display: none; 
-      flex-direction: column;
-      align-items: center; 
-      justify-content: center;
-      background: rgba(0,0,0,0.9);
-      z-index: 200;
-    }
-    
-    #game-over h1 {
-      font-size: 42px; 
-      color: #ff0000;
-      text-shadow: 0 0 40px #ff0000;
-      margin-bottom: 15px;
-    }
-    
-    #game-over .final-score {
-      font-size: 22px; 
-      color: #ffd700;
-      margin-bottom: 10px;
-    }
-    
-    /* 旋转提示 */
-    #rotate-hint {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.95);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 300;
-      color: #fff;
-      font-size: 18px;
-      text-align: center;
-      padding: 20px;
-    }
-    
-    #rotate-hint .rotate-icon {
-      font-size: 60px;
-      margin-bottom: 20px;
-      animation: rotateAnim 2s infinite;
-    }
-    
-    @keyframes rotateAnim {
-      0%, 100% { transform: rotate(0deg); }
-      50% { transform: rotate(90deg); }
-    }
-    
-    .hints {
-      position: absolute; 
-      bottom: 15px; 
-      left: 140px;
-      background: rgba(0,0,0,0.6);
-      padding: 8px 12px;
-      border-radius: 8px;
-      color: rgba(255,255,255,0.7);
-      font-size: 11px;
-    }
-    
-    .hints p { margin: 2px 0; }
-    
-    /* 桌面端隐藏手机控件 */
-    @media (min-width: 768px) {
-      .mobile-controls { display: none !important; }
-    }
-    
-    /* 小屏幕适配 */
-    @media (max-width: 400px) {
-      .main-title { font-size: 28px; }
-      .info-box { padding: 12px 15px; }
-      .info-box h3 { font-size: 14px; }
-      .info-box p { font-size: 12px; }
-      .start-btn { padding: 15px 50px; font-size: 20px; }
+    /* 手机端显示控制 */
+    @media (max-width: 767px) {
+      .mobile-controls { display: flex !important; }
     }
   </style>
 </head>
@@ -380,117 +68,41 @@
     <div id="start-screen">
       <div class="main-title">🐉 神龙飞行</div>
       <div class="sub-title">DRAGON FLIGHT 3D</div>
-      
       <div class="info-box">
         <h3>🎮 操作说明</h3>
-        <p>🖱️ 鼠标/触摸 - 控制飞行方向</p>
-        <p>🔥 左键/加速按钮 - 加速飞行</p>
-        <p>⚔️ Z键/攻击按钮 - 攻击BOSS</p>
-        <p>⌨️ 空格 - 暂停游戏</p>
+        <p>📱 滑动屏幕 - 控制方向</p>
+        <p>🔥 右下角按钮 - 加速</p>
+        <p>⚔️ 攻击按钮 - 攻击BOSS</p>
       </div>
-      
-      <div class="info-box">
-        <h3>✨ 游戏特色</h3>
-        <p>🐲 霸气东方神龙模型</p>
-        <p>👹 50分后出现BOSS</p>
-        <p>🛡️ 吃食物获得护盾</p>
-        <p>🔥 吃食物变长变强</p>
-      </div>
-      
       <button class="start-btn" id="start-btn">开始游戏</button>
-    </div>
-    
-    <!-- 旋转提示 -->
-    <div id="rotate-hint">
-      <div class="rotate-icon">📱</div>
-      <p>请旋转手机至横屏</p>
-      <p>以获得最佳游戏体验</p>
-      <button class="start-btn" id="continue-btn" style="margin-top: 30px;">继续竖屏游玩</button>
     </div>
     
     <!-- 游戏UI -->
     <div id="game-ui">
       <div class="top-stats">
-        <div class="stat-item">
-          <div class="stat-label">分数</div>
-          <div class="stat-value" id="score">0</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">长度</div>
-          <div class="stat-value" id="length">20</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-label">能量</div>
-          <div class="stat-value" id="power">0%</div>
-        </div>
-        <div class="boost-indicator" id="boost">🔥 BOOST</div>
-        <div class="difficulty-indicator" id="difficulty">Lv.1</div>
-        <div class="shield-indicator" id="food-shield" style="display:none;">🛡️ x0</div>
+        <div class="stat-item"><div class="stat-label">分数</div><div class="stat-value" id="score">0</div></div>
+        <div class="stat-item"><div class="stat-label">长度</div><div class="stat-value" id="length">20</div></div>
       </div>
-      
-      <div class="boss-health-bar" id="boss-health-bar">
-        <div class="boss-health-fill" id="boss-health-fill" style="width: 100%;"></div>
-      </div>
-      
-      <div class="boss-alert" id="boss-warning">⚠️ BOSS 出现 ⚠️</div>
-      
-      <!-- 手机控制按钮 -->
-      <div class="mobile-controls" id="mobile-controls">
-        <div class="attack-btn" id="attack-btn">⚔️</div>
-        <div class="boost-btn" id="boost-btn">🔥</div>
-      </div>
-      
-      <!-- 控制按钮 -->
-      <div class="controls-right">
-        <button class="ctrl-btn" id="pause-btn">⏸</button>
-        <button class="ctrl-btn" id="shield-btn">🛡</button>
-      </div>
-      
-      <div class="hints" id="hints">
-        <p>🖱️ 移动鼠标控制方向</p>
-        <p>🖱️ 左键按住加速</p>
-        <p>⚔️ Z键攻击BOSS</p>
-        <p>⌨️ 空格暂停</p>
+      <div class="mobile-controls">
+        <div class="control-btn attack-btn" id="attack-btn">⚔️</div>
+        <div class="control-btn boost-btn" id="boost-btn">🔥</div>
       </div>
     </div>
     
-    <!-- 暂停 -->
-    <div id="pause-overlay">
-      <h2>⏸ 游戏暂停</h2>
-      <p style="color:#aaa;margin-top:15px;">点击继续</p>
-    </div>
-    
-    <!-- 游戏结束 -->
-    <div id="game-over">
-      <h1>💀 游戏结束</h1>
-      <div class="final-score">最终分数: <span id="final-score">0</span></div>
-      <div style="color:#888;font-size:13px;margin-top:10px;">点击重新开始</div>
-    </div>
+    <!-- 暂停/结束 -->
+    <div id="pause-overlay" onclick="togglePause()"><h2>⏸ 游戏暂停</h2><p>点击继续</p></div>
+    <div id="game-over" onclick="location.reload()"><h1>💀 游戏结束</h1><div class="final-score">最终分数: <span id="final-score">0</span></div></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     // 游戏状态
     const state = {
-      playing: false, paused: false, score: 0, shield: false,
+      playing: false, paused: false, score: 0,
       mouse: { x: 0, y: 0 }, boosting: false,
-      dragon: {
-        pos: new THREE.Vector3(0, 0, 0),
-        dir: new THREE.Vector3(0, 0, 1),
-        targetDir: new THREE.Vector3(0, 0, 1),
-        speed: 0.15, length: 20
-      },
-      foods: [], boss: null, bullets: [],
-      bodySegments: [],
-      mouseSensitivity: 0.5,
-      difficulty: 1.0,
-      foodShield: 0,
-      bossHealth: 0,
-      bossMaxHealth: 100
+      dragon: { pos: new THREE.Vector3(0,0,0), dir: new THREE.Vector3(0,0,1), targetDir: new THREE.Vector3(0,0,1), speed: 0.15, length: 20 },
+      foods: [], obstacles: [], bodySegments: [], difficulty: 1
     };
-
-    // 检测触摸设备
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     // Three.js 初始化
     const canvas = document.getElementById('canvas');
@@ -500,14 +112,13 @@
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     
-    function resizeRenderer() {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      renderer.setSize(width, height);
-      camera.aspect = width / height;
+    function resize() {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
     }
-    resizeRenderer();
+    resize();
+    window.addEventListener('resize', resize);
     
     scene.add(new THREE.AmbientLight(0x404040, 0.5));
     const light = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -517,82 +128,39 @@
     // 星空
     const starsGeo = new THREE.BufferGeometry();
     const starsPos = [];
-    for (let i = 0; i < 3000; i++) {
-      starsPos.push((Math.random()-0.5)*400, (Math.random()-0.5)*400, (Math.random()-0.5)*400);
-    }
+    for (let i = 0; i < 3000; i++) starsPos.push((Math.random()-0.5)*400, (Math.random()-0.5)*400, (Math.random()-0.5)*400);
     starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsPos, 3));
     const starsMesh = new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 }));
     scene.add(starsMesh);
 
-    // 龙组
+    // 龙
     const dragonGroup = new THREE.Group();
     scene.add(dragonGroup);
     
     function createHead() {
       const head = new THREE.Group();
-      
-      const body = new THREE.Mesh(
-        new THREE.BoxGeometry(1.8, 1.4, 2.2),
-        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.15, emissive: 0xff6600, emissiveIntensity: 0.15 })
-      );
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 2.2), new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.15 }));
       head.add(body);
-      
       const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 3 });
-      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
-      leftEye.position.set(-0.7, 0.3, 0.4);
-      head.add(leftEye);
-      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
-      rightEye.position.set(0.7, 0.3, 0.4);
-      head.add(rightEye);
-      
-      const antlerMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
-      const antlerGeo = new THREE.CylinderGeometry(0.1, 0.15, 1.8, 8);
-      const leftAntler = new THREE.Mesh(antlerGeo, antlerMat);
-      leftAntler.position.set(-0.6, 1.5, -0.4);
-      leftAntler.rotation.z = -0.4;
-      head.add(leftAntler);
-      const rightAntler = new THREE.Mesh(antlerGeo, antlerMat);
-      rightAntler.position.set(0.6, 1.5, -0.4);
-      rightAntler.rotation.z = 0.4;
-      head.add(rightAntler);
-      
+      head.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat)).children[1].position.set(-0.7, 0.3, 0.4);
+      head.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat)).children[2].position.set(0.7, 0.3, 0.4);
       return head;
     }
-    
     const dragonHead = createHead();
     dragonGroup.add(dragonHead);
     
-    function createSegment(index, total) {
-      const progress = index / total;
-      const scale = Math.max(0.4, 1 - progress * 0.6);
-      const color = new THREE.Color(0xffd700).lerp(new THREE.Color(0xff4500), progress * 0.5);
-      
+    function createSegment(i, total) {
+      const scale = Math.max(0.4, 1 - i/total * 0.6);
       const seg = new THREE.Group();
-      
-      const bodyGeo = new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 12);
-      bodyGeo.rotateX(Math.PI/2);
-      const body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ 
-        color: color, metalness: 0.8, roughness: 0.2, emissive: color, emissiveIntensity: 0.1 
-      }));
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 12).rotateX(Math.PI/2), 
+        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 }));
       seg.add(body);
-      
-      for (let i = 0; i < 3; i++) {
-        const spine = new THREE.Mesh(
-          new THREE.ConeGeometry(scale*0.25, scale*0.5, 4),
-          new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 0.3 })
-        );
-        spine.position.set(0, scale*0.6, (i-1)*0.2);
-        spine.rotation.x = -Math.PI/6;
-        seg.add(spine);
-      }
-      
       return seg;
     }
     
     function initBody() {
       state.bodySegments.forEach(s => dragonGroup.remove(s.mesh));
       state.bodySegments = [];
-      
       for (let i = 0; i < state.dragon.length; i++) {
         const seg = createSegment(i, state.dragon.length);
         seg.position.set(0, 0, -i*0.8);
@@ -604,268 +172,72 @@
     // 食物
     const foodGroup = new THREE.Group();
     scene.add(foodGroup);
-    
-    function createFood() {
-      const food = new THREE.Group();
-      const mesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1.2, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2 })
-      );
-      food.add(mesh);
-      return food;
-    }
-    
     function spawnFood() {
-      const food = createFood();
-      const angle = (Math.random() - 0.5) * Math.PI * 0.8;
-      const radius = 15 + Math.random() * 25;
-      const dist = 40 + Math.random() * 60;
-      
-      const pos = {
-        x: state.dragon.pos.x + Math.sin(angle) * radius,
-        y: Math.max(-20, Math.min(20, (Math.random()-0.5)*30)),
-        z: state.dragon.pos.z + Math.cos(angle) * dist
-      };
-      
-      food.position.set(pos.x, pos.y, pos.z);
+      if (state.foods.length >= 10) return;
+      const food = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2 }));
+      const pos = new THREE.Vector3((Math.random()-0.5)*30, (Math.random()-0.5)*20, state.dragon.pos.z + 50 + Math.random()*50);
+      food.position.copy(pos);
       foodGroup.add(food);
       state.foods.push({ mesh: food, pos: pos });
     }
-    
+
     // 障碍物
     const obstacleGroup = new THREE.Group();
     scene.add(obstacleGroup);
-    state.obstacles = [];
-    
-    function createObstacle() {
-      const obstacle = new THREE.Group();
-      
-      const type = Math.random();
-      if (type < 0.5) {
-        const rockGeo = new THREE.DodecahedronGeometry(2 + Math.random() * 2, 0);
-        const rockMat = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.9 });
-        const rock = new THREE.Mesh(rockGeo, rockMat);
-        obstacle.add(rock);
-      } else {
-        const barrierGeo = new THREE.BoxGeometry(8, 1, 1);
-        const barrierMat = new THREE.MeshStandardMaterial({ 
-          color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5,
-          transparent: true, opacity: 0.7
-        });
-        const barrier = new THREE.Mesh(barrierGeo, barrierMat);
-        obstacle.add(barrier);
-      }
-      
-      return obstacle;
-    }
-    
     function spawnObstacle() {
-      const obstacle = createObstacle();
-      const angle = (Math.random() - 0.5) * Math.PI * 0.6;
-      const radius = 10 + Math.random() * 20;
-      const dist = 60 + Math.random() * 40;
-      
-      const pos = {
-        x: state.dragon.pos.x + Math.sin(angle) * radius,
-        y: Math.max(-15, Math.min(15, (Math.random()-0.5)*20)),
-        z: state.dragon.pos.z + dist
-      };
-      
-      obstacle.position.set(pos.x, pos.y, pos.z);
-      obstacleGroup.add(obstacle);
-      state.obstacles.push({ mesh: obstacle, pos: pos, rotationSpeed: (Math.random()-0.5)*0.02 });
-    }
-    
-    function updateObstacles() {
-      for (let i = state.obstacles.length - 1; i >= 0; i--) {
-        const obs = state.obstacles[i];
-        if (obs.pos.z - state.dragon.pos.z < -30) {
-          obstacleGroup.remove(obs.mesh);
-          state.obstacles.splice(i, 1);
-        } else {
-          obs.mesh.rotation.x += obs.rotationSpeed;
-          obs.mesh.rotation.y += obs.rotationSpeed * 0.5;
-        }
-      }
-      
-      const maxObstacles = Math.floor(3 + state.difficulty * 2);
-      while (state.obstacles.length < maxObstacles) spawnObstacle();
-      
-      for (let i = state.obstacles.length - 1; i >= 0; i--) {
-        const obs = state.obstacles[i];
-        if (obs.pos.distanceTo(state.dragon.pos) < 3.5) {
-          if (state.shield) {
-            obstacleGroup.remove(obs.mesh);
-            state.obstacles.splice(i, 1);
-            continue;
-          } else if (state.foodShield > 0) {
-            state.foodShield--;
-            obstacleGroup.remove(obs.mesh);
-            state.obstacles.splice(i, 1);
-            updateUI();
-            continue;
-          } else {
-            gameOver();
-            return;
-          }
-        }
-      }
-    }
-    
-    function updateFoods() {
-      for (let i = state.foods.length - 1; i >= 0; i--) {
-        if (state.foods[i].pos.z - state.dragon.pos.z < -30) {
-          foodGroup.remove(state.foods[i].mesh);
-          state.foods.splice(i, 1);
-        }
-      }
-      const maxFoods = Math.max(5, Math.floor(10 - state.difficulty * 1.5));
-      while (state.foods.length < maxFoods) spawnFood();
+      if (state.obstacles.length >= 5) return;
+      const obs = new THREE.Mesh(new THREE.DodecahedronGeometry(2 + Math.random()*2), new THREE.MeshStandardMaterial({ color: 0x666666 }));
+      const pos = new THREE.Vector3((Math.random()-0.5)*40, (Math.random()-0.5)*20, state.dragon.pos.z + 60 + Math.random()*40);
+      obs.position.copy(pos);
+      obstacleGroup.add(obs);
+      state.obstacles.push({ mesh: obs, pos: pos });
     }
 
-    // BOSS
-    const bossGroup = new THREE.Group();
-    scene.add(bossGroup);
-    
-    function createBoss() {
-      const boss = new THREE.Group();
-      const body = new THREE.Mesh(
-        new THREE.SphereGeometry(4, 32, 32),
-        new THREE.MeshStandardMaterial({ color: 0x2a0033, emissive: 0x6600ff, emissiveIntensity: 0.3 })
-      );
-      boss.add(body);
-      
-      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 5 });
-      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), eyeMat);
-      leftEye.position.set(-1.5, 0.5, 3);
-      boss.add(leftEye);
-      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.8, 16, 16), eyeMat);
-      rightEye.position.set(1.5, 0.5, 3);
-      boss.add(rightEye);
-      
-      return boss;
-    }
-    
-    function spawnBoss() {
-      if (state.boss) return;
-      const boss = createBoss();
-      boss.position.set(state.dragon.pos.x, state.dragon.pos.y + 10, state.dragon.pos.z + 150);
-      bossGroup.add(boss);
-      
-      state.bossMaxHealth = 50 + Math.floor(state.difficulty * 30);
-      state.bossHealth = state.bossMaxHealth;
-      
-      state.boss = { mesh: boss, pos: boss.position.clone(), lastShot: 0 };
-      
-      document.getElementById('boss-warning').style.display = 'block';
-      setTimeout(() => document.getElementById('boss-warning').style.display = 'none', 5000);
-    }
-    
-    // 弹幕
-    const bulletEffectsGroup = new THREE.Group();
-    scene.add(bulletEffectsGroup);
-    
-    const dragonFireGroup = new THREE.Group();
-    scene.add(dragonFireGroup);
-    state.dragonFireballs = [];
-    
-    function createBullet(pos, dir) {
-      const bulletGroup = new THREE.Group();
-      
-      const coreGeo = new THREE.SphereGeometry(0.6, 16, 16);
-      const coreMat = new THREE.MeshStandardMaterial({ 
-        color: 0xffffff, emissive: 0xff00ff, emissiveIntensity: 5
-      });
-      const core = new THREE.Mesh(coreGeo, coreMat);
-      bulletGroup.add(core);
-      
-      const glowGeo = new THREE.SphereGeometry(1.2, 16, 16);
-      const glowMat = new THREE.MeshBasicMaterial({ 
-        color: 0xff00ff, transparent: true, opacity: 0.5 
-      });
-      const glow = new THREE.Mesh(glowGeo, glowMat);
-      bulletGroup.add(glow);
-      
-      bulletGroup.position.copy(pos);
-      bulletEffectsGroup.add(bulletGroup);
-      
-      state.bullets.push({ 
-        mesh: bulletGroup, pos: pos.clone(), dir: dir.clone().normalize(), 
-        speed: 0.18, homing: true, core: core, glow: glow
-      });
-    }
-    
-    function updateDifficulty() {
-      state.difficulty = Math.min(3.0, 1.0 + Math.floor(state.score / 50) * 0.3);
-    }
-    
-    function updateBoss(dt) {
-      if (!state.boss) return;
-      const boss = state.boss;
+    // 游戏逻辑
+    function updateDragon(dt) {
       const d = state.dragon;
-      const time = Date.now() * 0.001;
+      d.targetDir.set(-state.mouse.x * 6, state.mouse.y * 5, 1).normalize();
+      d.dir.lerp(d.targetDir, 0.6).normalize();
+      d.pos.add(d.dir.clone().multiplyScalar((state.boosting ? d.speed * 2.5 : d.speed) * dt * 60));
+      dragonHead.position.copy(d.pos);
+      dragonHead.rotation.x = Math.asin(-d.dir.y);
+      dragonHead.rotation.y = Math.atan2(d.dir.x, d.dir.z);
       
-      const moveSpeed = 0.02 * state.difficulty;
-      const targetX = d.pos.x + d.dir.x * 100;
-      const targetZ = d.pos.z + d.dir.z * 100;
-      boss.pos.x += (targetX - boss.pos.x) * moveSpeed;
-      boss.pos.z += (targetZ - boss.pos.z) * moveSpeed;
-      boss.pos.y = d.pos.y + 15 + Math.sin(time) * 5;
-      boss.mesh.position.copy(boss.pos);
-      boss.mesh.lookAt(d.pos);
-      
-      const now = Date.now();
-      const shotInterval = Math.max(400, 800 - (state.difficulty - 1) * 200);
-      
-      if (now - boss.lastShot > shotInterval) {
-        boss.lastShot = now;
-        const toDragon = new THREE.Vector3().subVectors(d.pos, boss.pos).normalize();
-        for (let i = -1; i <= 1; i++) {
-          const bulletDir = toDragon.clone();
-          bulletDir.x += i * 0.2;
-          bulletDir.normalize();
-          createBullet(boss.pos.clone(), bulletDir);
-        }
+      for (let i = 0; i < state.bodySegments.length; i++) {
+        const seg = state.bodySegments[i];
+        const target = i === 0 ? d.pos.clone().add(d.dir.clone().multiplyScalar(-0.7)) : state.bodySegments[i-1].pos.clone().add(state.bodySegments[i-1].pos.clone().sub(seg.pos).normalize().multiplyScalar(-0.7));
+        seg.pos.lerp(target, 0.25);
+        seg.mesh.position.copy(seg.pos);
       }
     }
     
-    function updateBullets(dt) {
-      const dragon = state.dragon;
-      
-      for (let i = state.bullets.length - 1; i >= 0; i--) {
-        const b = state.bullets[i];
-        
-        if (b.homing) {
-          const toDragon = new THREE.Vector3().subVectors(dragon.pos, b.pos).normalize();
-          b.dir.lerp(toDragon, 0.03);
-          b.dir.normalize();
-        }
-        
-        b.pos.add(b.dir.clone().multiplyScalar(b.speed * dt * 60));
-        b.mesh.position.copy(b.pos);
-        
-        if (b.pos.distanceTo(dragon.pos) < 2.5) {
-          if (state.shield) {
-            bulletEffectsGroup.remove(b.mesh);
-            state.bullets.splice(i, 1);
-            continue;
-          } else if (state.foodShield > 0) {
-            state.foodShield--;
-            bulletEffectsGroup.remove(b.mesh);
-            state.bullets.splice(i, 1);
-            updateUI();
-            continue;
-          } else {
-            gameOver();
-            return;
-          }
-        }
-        
-        if (b.pos.distanceTo(dragon.pos) > 200) {
-          bulletEffectsGroup.remove(b.mesh);
-          state.bullets.splice(i, 1);
+    function checkCollisions() {
+      for (let i = state.foods.length - 1; i >= 0; i--) {
+        if (state.dragon.pos.distanceTo(state.foods[i].pos) < 3) {
+          state.score += 10; state.dragon.length += 2;
+          foodGroup.remove(state.foods[i].mesh); state.foods.splice(i, 1);
+          const seg = createSegment(state.bodySegments.length, state.dragon.length);
+          const last = state.bodySegments[state.bodySegments.length-1];
+          seg.position.copy(last.pos.clone().add(last.pos.clone().sub(state.bodySegments.length>1?state.bodySegments[state.bodySegments.length-2].pos:state.dragon.pos).normalize().multiplyScalar(-0.7)));
+          dragonGroup.add(seg); state.bodySegments.push({ mesh: seg, pos: seg.position.clone() });
+          updateUI();
         }
       }
+      for (let i = state.obstacles.length - 1; i >= 0; i--) {
+        if (state.dragon.pos.distanceTo(state.obstacles[i].pos) < 3.5) { gameOver(); return; }
+        if (state.obstacles[i].pos.z - state.dragon.pos.z < -30) { obstacleGroup.remove(state.obstacles[i].mesh); state.obstacles.splice(i, 1); }
+      }
+    }
+    
+    function updateCamera() {
+      const d = state.dragon;
+      camera.position.lerp(new THREE.Vector3(d.pos.x - d.dir.x * 8, d.pos.y + 8, d.pos.z - 15), 0.1);
+      camera.lookAt(d.pos.x + d.dir.x*5, d.pos.y, d.pos.z + d.dir.z*5);
+    }
+    
+    function updateUI() {
+      document.getElementById('score').textContent = state.score;
+      document.getElementById('length').textContent = state.dragon.length;
     }
     
     function gameOver() {
@@ -873,340 +245,93 @@
       document.getElementById('final-score').textContent = state.score;
       document.getElementById('game-over').style.display = 'flex';
     }
-
-    function updateDragon(dt) {
-      const d = state.dragon;
-      
-      let targetX = -state.mouse.x * 6 * state.mouseSensitivity;
-      let targetY = state.mouse.y * 5 * state.mouseSensitivity;
-      
-      d.targetDir.set(targetX, targetY, 1).normalize();
-      d.dir.lerp(d.targetDir, 0.6);
-      d.dir.normalize();
-      
-      const speed = state.boosting ? d.speed * 2.5 : d.speed;
-      d.pos.add(d.dir.clone().multiplyScalar(speed * dt * 60));
-      
-      dragonHead.position.copy(d.pos);
-      dragonHead.rotation.x = Math.asin(-d.dir.y);
-      dragonHead.rotation.y = Math.atan2(d.dir.x, d.dir.z);
-      
-      for (let i = 0; i < state.bodySegments.length; i++) {
-        const seg = state.bodySegments[i];
-        let targetPos;
-        
-        if (i === 0) {
-          targetPos = d.pos.clone().add(d.dir.clone().multiplyScalar(-0.7));
-        } else {
-          const prev = state.bodySegments[i-1];
-          const dir = prev.pos.clone().sub(seg.pos).normalize();
-          targetPos = prev.pos.clone().add(dir.multiplyScalar(-0.7));
-        }
-        
-        seg.pos.lerp(targetPos, 0.25);
-        seg.mesh.position.copy(seg.pos);
-        if (i > 0) seg.mesh.lookAt(state.bodySegments[i-1].pos);
-      }
-    }
-    
-    function checkCollisions() {
-      for (let i = state.foods.length - 1; i >= 0; i--) {
-        const food = state.foods[i];
-        const dist = state.dragon.pos.distanceTo(new THREE.Vector3(food.pos.x, food.pos.y, food.pos.z));
-        if (dist < 3) eatFood(i);
-      }
-    }
-    
-    function eatFood(index) {
-      foodGroup.remove(state.foods[index].mesh);
-      state.foods.splice(index, 1);
-      
-      state.score += 10;
-      state.dragon.length += 2;
-      state.foodShield++;
-      
-      const seg = createSegment(state.bodySegments.length, state.dragon.length);
-      const last = state.bodySegments[state.bodySegments.length-1];
-      const dir = last.pos.clone().sub(state.bodySegments.length>1 ? state.bodySegments[state.bodySegments.length-2].pos : state.dragon.pos).normalize();
-      const newPos = last.pos.clone().add(dir.multiplyScalar(-0.7));
-      seg.position.copy(newPos);
-      dragonGroup.add(seg);
-      state.bodySegments.push({ mesh: seg, pos: newPos.clone() });
-      
-      updateUI();
-    }
-    
-    function dragonAttack() {
-      if (!state.boss) return;
-      
-      const fireball = new THREE.Group();
-      const core = new THREE.Mesh(
-        new THREE.SphereGeometry(0.8, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 4 })
-      );
-      fireball.add(core);
-      
-      const glow = new THREE.Mesh(
-        new THREE.SphereGeometry(1.5, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.5 })
-      );
-      fireball.add(glow);
-      
-      const startPos = state.dragon.pos.clone();
-      startPos.y += 1;
-      fireball.position.copy(startPos);
-      
-      const targetDir = new THREE.Vector3().subVectors(state.boss.pos, startPos).normalize();
-      dragonFireGroup.add(fireball);
-      
-      state.dragonFireballs.push({
-        mesh: fireball, pos: startPos, dir: targetDir, speed: 0.8
-      });
-    }
-    
-    function updateDragonFireballs(dt) {
-      for (let i = state.dragonFireballs.length - 1; i >= 0; i--) {
-        const fb = state.dragonFireballs[i];
-        fb.pos.add(fb.dir.clone().multiplyScalar(fb.speed * dt * 60));
-        fb.mesh.position.copy(fb.pos);
-        fb.mesh.rotation.z += 0.2;
-        
-        if (state.boss && fb.pos.distanceTo(state.boss.pos) < 5) {
-          state.bossHealth -= 10;
-          dragonFireGroup.remove(fb.mesh);
-          state.dragonFireballs.splice(i, 1);
-          
-          if (state.bossHealth <= 0) defeatBoss();
-          continue;
-        }
-        
-        if (fb.pos.distanceTo(state.dragon.pos) > 200) {
-          dragonFireGroup.remove(fb.mesh);
-          state.dragonFireballs.splice(i, 1);
-        }
-      }
-    }
-    
-    function defeatBoss() {
-      if (!state.boss) return;
-      bossGroup.remove(state.boss.mesh);
-      state.boss = null;
-      state.bossHealth = 0;
-      state.score += 100;
-      
-      const alert = document.getElementById('boss-warning');
-      alert.textContent = '🎉 BOSS 被击败！+100分';
-      alert.style.background = 'linear-gradient(45deg, #00ff00, #00aa00)';
-      alert.style.display = 'block';
-      setTimeout(() => {
-        alert.style.display = 'none';
-        alert.textContent = '⚠️ BOSS 出现 ⚠️';
-        alert.style.background = 'linear-gradient(45deg, #ff0000, #990000)';
-      }, 3000);
-      
-      updateUI();
-    }
-
-    function updateCamera() {
-      const d = state.dragon;
-      const dist = Math.max(15, d.length * 0.6);
-      const height = Math.max(8, d.length * 0.3);
-      
-      const target = new THREE.Vector3(
-        d.pos.x - d.dir.x * dist * 0.5,
-        d.pos.y + height,
-        d.pos.z - dist
-      );
-      
-      camera.position.lerp(target, 0.1);
-      camera.lookAt(d.pos.x + d.dir.x*5, d.pos.y, d.pos.z + d.dir.z*5);
-    }
-
-    function updateUI() {
-      document.getElementById('score').textContent = state.score;
-      document.getElementById('length').textContent = state.dragon.length;
-      const power = Math.min(100, (state.dragon.length / 200) * 100);
-      document.getElementById('power').textContent = Math.floor(power) + '%';
-      document.getElementById('boost').style.display = state.boosting ? 'block' : 'none';
-      
-      const diffLevel = Math.floor(state.difficulty);
-      document.getElementById('difficulty').textContent = 'Lv.' + diffLevel;
-      
-      const shieldEl = document.getElementById('food-shield');
-      shieldEl.textContent = '🛡️ x' + state.foodShield;
-      shieldEl.style.display = state.foodShield > 0 ? 'block' : 'none';
-      
-      const bossHealthBar = document.getElementById('boss-health-bar');
-      const bossHealthFill = document.getElementById('boss-health-fill');
-      const attackBtn = document.getElementById('attack-btn');
-      
-      if (state.boss && state.bossHealth > 0) {
-        bossHealthBar.style.display = 'block';
-        bossHealthFill.style.width = (state.bossHealth / state.bossMaxHealth * 100) + '%';
-        if (isTouchDevice) attackBtn.style.display = 'flex';
-      } else {
-        bossHealthBar.style.display = 'none';
-        attackBtn.style.display = 'none';
-      }
-    }
-
-    function startGame() {
-      document.getElementById('start-screen').style.display = 'none';
-      document.getElementById('game-ui').style.display = 'block';
-      
-      state.playing = true;
-      state.score = 0;
-      state.dragon.length = 20;
-      state.dragon.pos.set(0, 0, 0);
-      state.dragon.dir.set(0, 0, 1);
-      state.difficulty = 1.0;
-      state.foodShield = 0;
-      state.bossHealth = 0;
-      
-      state.obstacles.forEach(o => obstacleGroup.remove(o.mesh));
-      state.obstacles = [];
-      state.bullets.forEach(b => bulletEffectsGroup.remove(b.mesh));
-      state.bullets = [];
-      state.dragonFireballs.forEach(f => dragonFireGroup.remove(f.mesh));
-      state.dragonFireballs = [];
-      if (state.boss) {
-        bossGroup.remove(state.boss.mesh);
-        state.boss = null;
-      }
-      
-      initBody();
-      updateUI();
-      
-      lastTime = performance.now();
-      gameLoop();
-    }
     
     function togglePause() {
       state.paused = !state.paused;
-      const overlay = document.getElementById('pause-overlay');
-      const btn = document.getElementById('pause-btn');
-      
-      if (state.paused) {
-        overlay.style.display = 'flex';
-        btn.textContent = '▶';
-      } else {
-        overlay.style.display = 'none';
-        btn.textContent = '⏸';
-        lastTime = performance.now();
-      }
+      document.getElementById('pause-overlay').style.display = state.paused ? 'flex' : 'none';
     }
-    
-    function toggleShield() {
-      state.shield = !state.shield;
-      const btn = document.getElementById('shield-btn');
-      btn.className = state.shield ? 'ctrl-btn shield-on' : 'ctrl-btn';
+
+    // 开始游戏
+    function startGame() {
+      document.getElementById('start-screen').style.display = 'none';
+      document.getElementById('game-ui').style.display = 'block';
+      state.playing = true; state.paused = false; state.score = 0; state.dragon.length = 20;
+      state.dragon.pos.set(0,0,0); state.dragon.dir.set(0,0,1);
+      state.foods.forEach(f => foodGroup.remove(f.mesh)); state.foods = [];
+      state.obstacles.forEach(o => obstacleGroup.remove(o.mesh)); state.obstacles = [];
+      initBody(); updateUI();
+      lastTime = performance.now();
+      gameLoop();
     }
 
     // 事件绑定
     document.getElementById('start-btn').addEventListener('click', startGame);
-    document.getElementById('pause-btn').addEventListener('click', togglePause);
-    document.getElementById('shield-btn').addEventListener('click', toggleShield);
-    document.getElementById('pause-overlay').addEventListener('click', togglePause);
-    document.getElementById('game-over').addEventListener('click', () => location.reload());
+    document.getElementById('start-btn').addEventListener('touchstart', function(e){ e.preventDefault(); startGame(); });
     
-    // 加速按钮
-    const boostBtn = document.getElementById('boost-btn');
-    boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); state.boosting = true; boostBtn.style.transform = 'scale(0.9)'; });
-    boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); state.boosting = false; boostBtn.style.transform = 'scale(1)'; });
+    // 触摸控制 - 绑定到canvas
+    let isTouching = false;
+    canvas.addEventListener('touchstart', function(e) {
+      if (!state.playing || state.paused) return;
+      isTouching = true;
+      const touch = e.touches[0];
+      state.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      state.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+    }, {passive: false});
     
-    // 攻击按钮
-    const attackBtn = document.getElementById('attack-btn');
-    attackBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dragonAttack(); attackBtn.style.transform = 'scale(0.9)'; });
-    attackBtn.addEventListener('touchend', (e) => { e.preventDefault(); attackBtn.style.transform = 'scale(1)'; });
+    canvas.addEventListener('touchmove', function(e) {
+      if (!state.playing || state.paused || !isTouching) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      state.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
+      state.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
+    }, {passive: false});
     
-    // 键盘事件
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') { e.preventDefault(); togglePause(); }
-      if (e.code === 'KeyZ' || e.code === 'KeyX') { e.preventDefault(); dragonAttack(); }
-    });
-
-    // 鼠标事件
-    document.addEventListener('mousemove', (e) => {
+    canvas.addEventListener('touchend', function() { isTouching = false; state.boosting = false; });
+    
+    // 鼠标控制
+    document.addEventListener('mousemove', function(e) {
       if (!state.playing || state.paused) return;
       state.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       state.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     });
+    document.addEventListener('mousedown', function() { if (state.playing) state.boosting = true; });
+    document.addEventListener('mouseup', function() { state.boosting = false; });
     
-    document.addEventListener('mousedown', (e) => {
-      if (!state.playing) return;
-      if (e.button === 0) state.boosting = true;
-    });
+    // 按钮控制
+    const boostBtn = document.getElementById('boost-btn');
+    boostBtn.addEventListener('touchstart', function(e) { e.preventDefault(); state.boosting = true; this.style.transform = 'scale(0.9)'; });
+    boostBtn.addEventListener('touchend', function(e) { e.preventDefault(); state.boosting = false; this.style.transform = 'scale(1)'; });
+    boostBtn.addEventListener('mousedown', function() { state.boosting = true; this.style.transform = 'scale(0.9)'; });
+    boostBtn.addEventListener('mouseup', function() { state.boosting = false; this.style.transform = 'scale(1)'; });
     
-    document.addEventListener('mouseup', (e) => {
-      if (e.button === 0) state.boosting = false;
-    });
-    
-    // 触摸事件 - 全屏触摸控制
-    let touchStartX = 0, touchStartY = 0;
-    document.addEventListener('touchstart', (e) => {
-      if (!state.playing || state.paused) return;
-      const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-      
-      // 右半边屏幕是加速
-      if (touch.clientX > window.innerWidth * 0.7 && touch.clientY > window.innerHeight * 0.5) {
-        state.boosting = true;
-      }
-    }, { passive: false });
-    
-    document.addEventListener('touchmove', (e) => {
-      if (!state.playing || state.paused) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const deltaX = (touch.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
-      const deltaY = -(touch.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-      state.mouse.x = deltaX;
-      state.mouse.y = deltaY;
-    }, { passive: false });
-    
-    document.addEventListener('touchend', () => {
-      state.boosting = false;
-    });
-    
-    window.addEventListener('resize', resizeRenderer);
+    const attackBtn = document.getElementById('attack-btn');
+    attackBtn.addEventListener('touchstart', function(e) { e.preventDefault(); this.style.transform = 'scale(0.9)'; setTimeout(() => this.style.transform = 'scale(1)', 150); });
+    attackBtn.addEventListener('mousedown', function() { this.style.transform = 'scale(0.9)'; setTimeout(() => this.style.transform = 'scale(1)', 150); });
 
     // 游戏循环
     let lastTime = performance.now();
-    
     function gameLoop() {
       if (!state.playing) return;
-      
       const now = performance.now();
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
       
       if (!state.paused) {
-        updateDifficulty();
         updateDragon(dt);
         checkCollisions();
-        updateFoods();
-        updateObstacles();
-        
-        if (starsMesh) starsMesh.position.copy(state.dragon.pos);
-        
-        if (state.score >= 50 && !state.boss) spawnBoss();
-        
-        updateBoss(dt);
-        updateBullets(dt);
-        updateDragonFireballs(dt);
-        updateUI();
-        
-        const t = Date.now() * 0.001;
-        state.foods.forEach((f, i) => f.mesh.rotation.y = t + i);
+        if (Math.random() < 0.05) spawnFood();
+        if (Math.random() < 0.02) spawnObstacle();
+        starsMesh.position.copy(state.dragon.pos);
       }
-      
       updateCamera();
       renderer.render(scene, camera);
       requestAnimationFrame(gameLoop);
     }
 
     // 初始渲染
+    initBody();
+    camera.position.set(0, 8, 20);
+    camera.lookAt(0, 0, 0);
     renderer.render(scene, camera);
   </script>
 </body>
