@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="screen-orientation" content="landscape">
+  <meta name="x5-orientation" content="landscape">
   <title>3D神龙飞行</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -107,7 +109,7 @@
     // Three.js 初始化
     const canvas = document.getElementById('canvas');
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0a2e, 0.008);
+    scene.fog = new THREE.FogExp2(0x1a1a4e, 0.015);
     
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -120,9 +122,13 @@
     resize();
     window.addEventListener('resize', resize);
     
-    scene.add(new THREE.AmbientLight(0x404040, 0.5));
-    const light = new THREE.DirectionalLight(0xffffff, 0.8);
+    scene.add(new THREE.AmbientLight(0x666666, 1.2));
+    const light = new THREE.DirectionalLight(0xffffff, 1.5);
     light.position.set(10, 20, 10);
+    scene.add(light);
+    const backLight = new THREE.DirectionalLight(0xffd700, 0.8);
+    backLight.position.set(-10, 10, -10);
+    scene.add(backLight);
     scene.add(light);
 
     // 星空
@@ -139,11 +145,16 @@
     
     function createHead() {
       const head = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 2.2), new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.15 }));
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.15, emissive: 0xffaa00, emissiveIntensity: 0.3 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 2.2), bodyMat);
       head.add(body);
-      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 3 });
-      head.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat)).children[1].position.set(-0.7, 0.3, 0.4);
-      head.add(new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat)).children[2].position.set(0.7, 0.3, 0.4);
+      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 5 });
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
+      leftEye.position.set(-0.7, 0.3, 0.4);
+      head.add(leftEye);
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
+      rightEye.position.set(0.7, 0.3, 0.4);
+      head.add(rightEye);
       return head;
     }
     const dragonHead = createHead();
@@ -152,8 +163,8 @@
     function createSegment(i, total) {
       const scale = Math.max(0.4, 1 - i/total * 0.6);
       const seg = new THREE.Group();
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 12).rotateX(Math.PI/2), 
-        new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 }));
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2, emissive: 0xffaa00, emissiveIntensity: 0.2 });
+      const body = new THREE.Mesh(new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 12).rotateX(Math.PI/2), bodyMat);
       seg.add(body);
       return seg;
     }
