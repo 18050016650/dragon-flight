@@ -2,13 +2,32 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
   <title>3D神龙飞行</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
     body { overflow: hidden; background: #000; font-family: Arial, sans-serif; }
     #game-container { width: 100vw; height: 100vh; position: relative; }
     canvas { display: block; }
+    
+    /* 强制横屏 */
+    @media screen and (orientation: portrait) {
+      body {
+        transform: rotate(90deg);
+        transform-origin: 50% 50%;
+        width: 100vh;
+        height: 100vw;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-top: -50vw;
+        margin-left: -50vh;
+      }
+      #game-container {
+        width: 100vh;
+        height: 100vw;
+      }
+    }
     
     /* 开始界面 */
     #start-screen {
