@@ -5,38 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>3D神龙飞行</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; }
-    body { overflow: hidden; background: #000; font-family: Arial, sans-serif; }
-    #game-container { width: 100vw; height: 100vh; position: relative; }
-    canvas { display: block; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { 
+      width: 100%; 
+      height: 100%; 
+      overflow: hidden; 
+      background: #000; 
+      font-family: Arial, sans-serif;
+    }
+    #game-container { 
+      width: 100%; 
+      height: 100%; 
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    canvas { 
+      display: block; 
+      width: 100% !important;
+      height: 100% !important;
+    }
     
-    /* 开始界面 - 适配各种屏幕 */
+    /* 开始界面 */
     #start-screen {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
       background: linear-gradient(135deg, #1a0a4e 0%, #0a0a2e 50%, #000 100%);
       z-index: 100;
       padding: 20px;
-      overflow-y: auto;
     }
     
     .main-title {
-      font-size: clamp(24px, 6vw, 48px); font-weight: bold; color: #ffd700;
+      font-size: 36px; 
+      font-weight: bold; 
+      color: #ffd700;
       text-shadow: 0 0 30px #ff6b00, 0 0 60px #ff00ff;
-      margin-bottom: 5px;
-      animation: glow 2s ease-in-out infinite alternate;
+      margin-bottom: 10px;
       text-align: center;
     }
     
-    @keyframes glow {
-      from { text-shadow: 0 0 30px #ff6b00, 0 0 60px #ff00ff; }
-      to { text-shadow: 0 0 50px #ffd700, 0 0 80px #ff00ff, 0 0 100px #00ffff; }
-    }
-    
     .sub-title {
-      font-size: clamp(12px, 3vw, 16px); color: #00ffff;
-      margin-bottom: 20px;
-      text-shadow: 0 0 20px #00ffff;
+      font-size: 14px; 
+      color: #00ffff;
+      margin-bottom: 30px;
     }
     
     .info-box {
@@ -46,8 +64,8 @@
       padding: 15px 20px;
       margin-bottom: 15px;
       color: #fff;
-      max-width: 90vw;
-      width: 400px;
+      width: 90%;
+      max-width: 400px;
     }
     
     .info-box h3 {
@@ -63,91 +81,90 @@
     }
     
     .start-btn {
-      padding: 15px 50px;
-      font-size: 20px; font-weight: bold;
+      padding: 18px 60px;
+      font-size: 22px; 
+      font-weight: bold;
       color: #1a1a4e;
       background: linear-gradient(45deg, #ffd700, #ff6b00);
       border: none;
       border-radius: 50px;
       cursor: pointer;
       box-shadow: 0 0 30px rgba(255,215,0,0.5);
-      transition: all 0.3s;
       margin-top: 20px;
-      z-index: 101;
+      touch-action: manipulation;
     }
     
-    .start-btn:hover, .start-btn:active {
-      transform: scale(1.05);
-      box-shadow: 0 0 50px rgba(255,215,0,0.8);
+    .start-btn:active {
+      transform: scale(0.95);
     }
     
     /* 游戏UI */
     #game-ui {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
       pointer-events: none;
       display: none;
+      z-index: 10;
     }
     
     .top-stats {
-      position: absolute; top: 15px; left: 50%;
+      position: absolute; 
+      top: 10px; 
+      left: 50%;
       transform: translateX(-50%);
-      display: flex; gap: 10px;
+      display: flex; 
+      gap: 8px;
       pointer-events: auto;
       flex-wrap: wrap;
       justify-content: center;
     }
     
     .stat-item {
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.7);
       border: 1px solid rgba(255,215,0,0.3);
       border-radius: 8px;
-      padding: 8px 12px;
+      padding: 6px 10px;
       text-align: center;
-      min-width: 60px;
+      min-width: 55px;
     }
     
-    .stat-label { font-size: 10px; color: #aaa; text-transform: uppercase; }
-    .stat-value { font-size: 18px; font-weight: bold; color: #ffd700; }
+    .stat-label { font-size: 10px; color: #aaa; }
+    .stat-value { font-size: 16px; font-weight: bold; color: #ffd700; }
     
-    .boost-indicator {
-      background: linear-gradient(45deg, #ff6600, #ff3300);
-      padding: 8px 15px;
+    .boost-indicator, .difficulty-indicator, .shield-indicator {
+      padding: 6px 12px;
       border-radius: 8px;
       font-weight: bold;
       color: #fff;
-      font-size: 12px;
-      animation: pulse 0.5s infinite;
+      font-size: 11px;
+    }
+    
+    .boost-indicator {
+      background: linear-gradient(45deg, #ff6600, #ff3300);
       display: none;
     }
     
     .difficulty-indicator {
       background: linear-gradient(45deg, #6600ff, #9900cc);
-      padding: 8px 15px;
-      border-radius: 8px;
-      font-weight: bold;
-      color: #fff;
-      font-size: 12px;
     }
     
     .shield-indicator {
       background: linear-gradient(45deg, #00ff88, #00cc66);
-      padding: 8px 15px;
-      border-radius: 8px;
-      font-weight: bold;
-      color: #fff;
-      font-size: 12px;
     }
     
     .boss-health-bar {
       position: absolute;
-      top: 120px;
+      top: 100px;
       left: 50%;
       transform: translateX(-50%);
-      width: 200px;
-      height: 20px;
-      background: rgba(0,0,0,0.6);
+      width: 180px;
+      height: 18px;
+      background: rgba(0,0,0,0.7);
       border: 2px solid #ff0000;
-      border-radius: 10px;
+      border-radius: 9px;
       overflow: hidden;
       display: none;
     }
@@ -158,268 +175,201 @@
       transition: width 0.3s ease;
     }
     
-    @keyframes shieldFlash {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.2); filter: brightness(1.5); }
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-    
     .boss-alert {
-      position: absolute; top: 80px; left: 50%;
+      position: absolute; 
+      top: 70px; 
+      left: 50%;
       transform: translateX(-50%);
       background: linear-gradient(45deg, #ff0000, #990000);
-      padding: 10px 25px;
+      padding: 8px 20px;
       border-radius: 8px;
-      font-size: 16px; font-weight: bold;
+      font-size: 14px; 
+      font-weight: bold;
       color: #fff;
-      animation: shake 0.5s infinite;
       display: none;
-      box-shadow: 0 0 30px #ff0000;
-      white-space: nowrap;
+      box-shadow: 0 0 20px #ff0000;
     }
     
-    @keyframes shake {
-      0%, 100% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.1); }
-    }
-    
-    /* 虚拟操纵杆 */
-    .joystick-area {
-      position: fixed;
-      width: 140px;
-      height: 140px;
-      pointer-events: none;
-      z-index: 10;
-      display: none;
-    }
-    
-    .joystick-area.active {
-      display: block;
-    }
-    
-    .joystick-base {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      border: 2px solid rgba(255,215,0,0.4);
-      box-shadow: 0 0 30px rgba(255,215,0,0.2);
-      backdrop-filter: blur(4px);
-    }
-    
-    .joystick-stick {
-      position: absolute;
-      width: 55px;
-      height: 55px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ffd700, #ff6b00);
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 25px rgba(255,215,0,0.6), inset 0 2px 5px rgba(255,255,255,0.3);
-    }
-    
-    /* 手机控制按钮组 */
+    /* 手机控制 */
     .mobile-controls {
       position: absolute;
-      right: 15px;
-      bottom: 60px;
+      right: 10px;
+      bottom: 50px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       pointer-events: auto;
-      z-index: 10;
+      z-index: 20;
     }
     
     .boost-btn, .attack-btn {
-      width: 65px;
-      height: 65px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       border: 3px solid;
       color: #fff;
-      font-size: 22px;
+      font-size: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 20px;
+      pointer-events: auto;
+      touch-action: manipulation;
       user-select: none;
       -webkit-user-select: none;
-      cursor: pointer;
     }
     
     .boost-btn {
       background: linear-gradient(135deg, #ff6600, #ff3300);
       border-color: rgba(255,100,0,0.5);
-      box-shadow: 0 0 20px rgba(255,100,0,0.4);
-    }
-    
-    .boost-btn:active, .attack-btn:active {
-      transform: scale(0.95);
-    }
-    
-    .boost-btn.active {
-      animation: boostPulse 0.3s infinite;
     }
     
     .attack-btn {
       background: linear-gradient(135deg, #ff0000, #990000);
       border-color: rgba(255,0,0,0.5);
-      box-shadow: 0 0 20px rgba(255,0,0,0.4);
       display: none;
     }
     
-    @keyframes boostPulse {
-      0%, 100% { box-shadow: 0 0 20px rgba(255,100,0,0.6); }
-      50% { box-shadow: 0 0 35px rgba(255,150,0,0.9); }
+    .boost-btn:active, .attack-btn:active {
+      transform: scale(0.9);
     }
     
     /* 控制按钮 */
     .controls-right {
-      position: absolute; right: 20px; top: 80px;
-      display: flex; flex-direction: column; gap: 10px;
+      position: absolute; 
+      right: 10px; 
+      top: 70px;
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px;
       pointer-events: auto;
+      z-index: 20;
     }
     
     .ctrl-btn {
-      width: 45px; height: 45px;
+      width: 42px; 
+      height: 42px;
       border-radius: 50%;
       border: 2px solid rgba(255,215,0,0.5);
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.7);
       color: #fff;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      touch-action: manipulation;
     }
     
     .ctrl-btn:active {
       background: rgba(255,215,0,0.3);
-      transform: scale(0.95);
     }
     
     .ctrl-btn.shield-on {
       background: rgba(0,255,100,0.4);
       border-color: #00ff64;
-      box-shadow: 0 0 15px #00ff64;
     }
     
     /* 暂停 */
     #pause-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.8);
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
+      display: none; 
+      flex-direction: column;
+      align-items: center; 
+      justify-content: center;
+      background: rgba(0,0,0,0.85);
       z-index: 50;
     }
     
     #pause-overlay h2 {
-      font-size: 36px; color: #00ffff;
-      text-shadow: 0 0 30px #00ffff;
-    }
-    
-    #pause-overlay p {
-      font-size: 16px; color: #aaa;
-      margin-top: 15px;
+      font-size: 32px; 
+      color: #00ffff;
     }
     
     /* 游戏结束 */
     #game-over {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: none; flex-direction: column;
-      align-items: center; justify-content: center;
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
+      display: none; 
+      flex-direction: column;
+      align-items: center; 
+      justify-content: center;
       background: rgba(0,0,0,0.9);
       z-index: 200;
     }
     
     #game-over h1 {
-      font-size: 48px; color: #ff0000;
+      font-size: 42px; 
+      color: #ff0000;
       text-shadow: 0 0 40px #ff0000;
       margin-bottom: 15px;
     }
     
     #game-over .final-score {
-      font-size: 24px; color: #ffd700;
+      font-size: 22px; 
+      color: #ffd700;
       margin-bottom: 10px;
     }
     
-    #game-over .restart-hint {
-      font-size: 14px; color: #888;
-    }
-    
-    /* 横竖屏切换按钮 */
-    .rotate-btn {
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      border: 2px solid rgba(0,200,255,0.5);
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      font-size: 22px;
-      display: flex;
+    /* 旋转提示 */
+    #rotate-hint {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      display: none;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      pointer-events: auto;
-      z-index: 10;
-      cursor: pointer;
+      z-index: 300;
+      color: #fff;
+      font-size: 18px;
+      text-align: center;
+      padding: 20px;
     }
     
-    .rotate-btn:active {
-      background: rgba(0,200,255,0.3);
-      transform: scale(0.9);
-    }
-
-    /* 设备适配 - 桌面端隐藏手机控件 */
-    @media (min-width: 768px) {
-      .joystick-area { display: none !important; }
-      .mobile-controls { display: none !important; }
-      .rotate-btn { display: none !important; }
+    #rotate-hint .rotate-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      animation: rotateAnim 2s infinite;
     }
     
-    /* 手机端适配 */
-    @media (max-width: 767px) {
-      .hints { display: none; }
-      .top-stats { 
-        top: 10px; 
-        gap: 5px;
-        padding: 0 10px;
-      }
-      .stat-item {
-        padding: 5px 8px;
-        min-width: 50px;
-      }
-      .stat-value { font-size: 14px; }
-      .stat-label { font-size: 9px; }
-      .info-box {
-        padding: 12px 15px;
-        margin-bottom: 10px;
-      }
-      .info-box h3 { font-size: 14px; }
-      .info-box p { font-size: 12px; }
-      .start-btn {
-        padding: 12px 40px;
-        font-size: 18px;
-      }
+    @keyframes rotateAnim {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(90deg); }
     }
     
     .hints {
-      position: absolute; bottom: 20px; left: 160px;
-      background: rgba(0,0,0,0.5);
-      padding: 10px 15px;
+      position: absolute; 
+      bottom: 15px; 
+      left: 140px;
+      background: rgba(0,0,0,0.6);
+      padding: 8px 12px;
       border-radius: 8px;
       color: rgba(255,255,255,0.7);
-      font-size: 12px;
+      font-size: 11px;
     }
     
-    .hints p { margin: 3px 0; }
+    .hints p { margin: 2px 0; }
+    
+    /* 桌面端隐藏手机控件 */
+    @media (min-width: 768px) {
+      .mobile-controls { display: none !important; }
+    }
+    
+    /* 小屏幕适配 */
+    @media (max-width: 400px) {
+      .main-title { font-size: 28px; }
+      .info-box { padding: 12px 15px; }
+      .info-box h3 { font-size: 14px; }
+      .info-box p { font-size: 12px; }
+      .start-btn { padding: 15px 50px; font-size: 20px; }
+    }
   </style>
 </head>
 <body>
@@ -433,21 +383,29 @@
       
       <div class="info-box">
         <h3>🎮 操作说明</h3>
-        <p>🖱️ 鼠标/操纵杆 - 控制飞行方向</p>
+        <p>🖱️ 鼠标/触摸 - 控制飞行方向</p>
         <p>🔥 左键/加速按钮 - 加速飞行</p>
         <p>⚔️ Z键/攻击按钮 - 攻击BOSS</p>
-        <p>⌨️ 空格/暂停按钮 - 暂停</p>
+        <p>⌨️ 空格 - 暂停游戏</p>
       </div>
       
       <div class="info-box">
         <h3>✨ 游戏特色</h3>
         <p>🐲 霸气东方神龙模型</p>
-        <p>👹 50分后出现BOSS，可攻击击败</p>
-        <p>🛡️ 吃食物获得护盾抵挡伤害</p>
+        <p>👹 50分后出现BOSS</p>
+        <p>🛡️ 吃食物获得护盾</p>
         <p>🔥 吃食物变长变强</p>
       </div>
       
       <button class="start-btn" id="start-btn">开始游戏</button>
+    </div>
+    
+    <!-- 旋转提示 -->
+    <div id="rotate-hint">
+      <div class="rotate-icon">📱</div>
+      <p>请旋转手机至横屏</p>
+      <p>以获得最佳游戏体验</p>
+      <button class="start-btn" id="continue-btn" style="margin-top: 30px;">继续竖屏游玩</button>
     </div>
     
     <!-- 游戏UI -->
@@ -467,30 +425,20 @@
         </div>
         <div class="boost-indicator" id="boost">🔥 BOOST</div>
         <div class="difficulty-indicator" id="difficulty">Lv.1</div>
-        <div class="shield-indicator" id="food-shield">🛡️ x0</div>
+        <div class="shield-indicator" id="food-shield" style="display:none;">🛡️ x0</div>
       </div>
       
-      <!-- BOSS血条 -->
       <div class="boss-health-bar" id="boss-health-bar">
         <div class="boss-health-fill" id="boss-health-fill" style="width: 100%;"></div>
       </div>
       
       <div class="boss-alert" id="boss-warning">⚠️ BOSS 出现 ⚠️</div>
       
-      <!-- 虚拟操纵杆 -->
-      <div class="joystick-area" id="joystick">
-        <div class="joystick-base"></div>
-        <div class="joystick-stick" id="joystick-stick"></div>
-      </div>
-      
-      <!-- 手机控制按钮组 -->
+      <!-- 手机控制按钮 -->
       <div class="mobile-controls" id="mobile-controls">
         <div class="attack-btn" id="attack-btn">⚔️</div>
         <div class="boost-btn" id="boost-btn">🔥</div>
       </div>
-
-      <!-- 横竖屏切换 -->
-      <div class="rotate-btn" id="rotate-btn">🔄</div>
       
       <!-- 控制按钮 -->
       <div class="controls-right">
@@ -498,7 +446,7 @@
         <button class="ctrl-btn" id="shield-btn">🛡</button>
       </div>
       
-      <div class="hints">
+      <div class="hints" id="hints">
         <p>🖱️ 移动鼠标控制方向</p>
         <p>🖱️ 左键按住加速</p>
         <p>⚔️ Z键攻击BOSS</p>
@@ -509,14 +457,14 @@
     <!-- 暂停 -->
     <div id="pause-overlay">
       <h2>⏸ 游戏暂停</h2>
-      <p>点击继续</p>
+      <p style="color:#aaa;margin-top:15px;">点击继续</p>
     </div>
     
     <!-- 游戏结束 -->
     <div id="game-over">
       <h1>💀 游戏结束</h1>
       <div class="final-score">最终分数: <span id="final-score">0</span></div>
-      <div class="restart-hint">点击重新开始</div>
+      <div style="color:#888;font-size:13px;margin-top:10px;">点击重新开始</div>
     </div>
   </div>
 
@@ -526,7 +474,6 @@
     const state = {
       playing: false, paused: false, score: 0, shield: false,
       mouse: { x: 0, y: 0 }, boosting: false,
-      joystick: { active: false, dx: 0, dy: 0 },
       dragon: {
         pos: new THREE.Vector3(0, 0, 0),
         dir: new THREE.Vector3(0, 0, 1),
@@ -542,7 +489,7 @@
       bossMaxHealth: 100
     };
 
-    // 检测是否为触摸设备
+    // 检测触摸设备
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     // Three.js 初始化
@@ -552,8 +499,15 @@
     
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    function resizeRenderer() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+    resizeRenderer();
     
     scene.add(new THREE.AmbientLight(0x404040, 0.5));
     const light = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -574,7 +528,6 @@
     const dragonGroup = new THREE.Group();
     scene.add(dragonGroup);
     
-    // 创建龙头
     function createHead() {
       const head = new THREE.Group();
       
@@ -609,7 +562,6 @@
     const dragonHead = createHead();
     dragonGroup.add(dragonHead);
     
-    // 创建龙身节段
     function createSegment(index, total) {
       const progress = index / total;
       const scale = Math.max(0.4, 1 - progress * 0.6);
@@ -680,7 +632,7 @@
       state.foods.push({ mesh: food, pos: pos });
     }
     
-    // 障碍物组
+    // 障碍物
     const obstacleGroup = new THREE.Group();
     scene.add(obstacleGroup);
     state.obstacles = [];
@@ -691,9 +643,7 @@
       const type = Math.random();
       if (type < 0.5) {
         const rockGeo = new THREE.DodecahedronGeometry(2 + Math.random() * 2, 0);
-        const rockMat = new THREE.MeshStandardMaterial({ 
-          color: 0x666666, roughness: 0.9 
-        });
+        const rockMat = new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.9 });
         const rock = new THREE.Mesh(rockGeo, rockMat);
         obstacle.add(rock);
       } else {
@@ -753,7 +703,6 @@
             obstacleGroup.remove(obs.mesh);
             state.obstacles.splice(i, 1);
             updateUI();
-            showShieldUsedEffect();
             continue;
           } else {
             gameOver();
@@ -777,8 +726,6 @@
     // BOSS
     const bossGroup = new THREE.Group();
     scene.add(bossGroup);
-    const bulletGroup = new THREE.Group();
-    scene.add(bulletGroup);
     
     function createBoss() {
       const boss = new THREE.Group();
@@ -814,11 +761,10 @@
       setTimeout(() => document.getElementById('boss-warning').style.display = 'none', 5000);
     }
     
-    // 弹幕视觉效果组
+    // 弹幕
     const bulletEffectsGroup = new THREE.Group();
     scene.add(bulletEffectsGroup);
     
-    // 龙的火球攻击组
     const dragonFireGroup = new THREE.Group();
     scene.add(dragonFireGroup);
     state.dragonFireballs = [];
@@ -828,66 +774,24 @@
       
       const coreGeo = new THREE.SphereGeometry(0.6, 16, 16);
       const coreMat = new THREE.MeshStandardMaterial({ 
-        color: 0xffffff, 
-        emissive: 0xff00ff, 
-        emissiveIntensity: 5,
-        metalness: 0.9,
-        roughness: 0.1
+        color: 0xffffff, emissive: 0xff00ff, emissiveIntensity: 5
       });
       const core = new THREE.Mesh(coreGeo, coreMat);
       bulletGroup.add(core);
       
-      const innerGlowGeo = new THREE.SphereGeometry(1.0, 16, 16);
-      const innerGlowMat = new THREE.MeshBasicMaterial({ 
-        color: 0xff00ff, 
-        transparent: true, 
-        opacity: 0.6 
+      const glowGeo = new THREE.SphereGeometry(1.2, 16, 16);
+      const glowMat = new THREE.MeshBasicMaterial({ 
+        color: 0xff00ff, transparent: true, opacity: 0.5 
       });
-      const innerGlow = new THREE.Mesh(innerGlowGeo, innerGlowMat);
-      bulletGroup.add(innerGlow);
-      
-      const outerGlowGeo = new THREE.SphereGeometry(1.5, 16, 16);
-      const outerGlowMat = new THREE.MeshBasicMaterial({ 
-        color: 0xff66ff, 
-        transparent: true, 
-        opacity: 0.3 
-      });
-      const outerGlow = new THREE.Mesh(outerGlowGeo, outerGlowMat);
-      bulletGroup.add(outerGlow);
-      
-      const trailGeo = new THREE.BufferGeometry();
-      const trailCount = 8;
-      const trailPositions = new Float32Array(trailCount * 3);
-      trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
-      const trailMat = new THREE.PointsMaterial({
-        color: 0xff00ff,
-        size: 0.4,
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending
-      });
-      const trail = new THREE.Points(trailGeo, trailMat);
-      bulletGroup.add(trail);
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      bulletGroup.add(glow);
       
       bulletGroup.position.copy(pos);
-      
-      const lookTarget = pos.clone().add(dir);
-      bulletGroup.lookAt(lookTarget);
-      
       bulletEffectsGroup.add(bulletGroup);
       
       state.bullets.push({ 
-        mesh: bulletGroup, 
-        pos: pos.clone(), 
-        dir: dir.clone().normalize(), 
-        speed: 0.18, 
-        homing: true,
-        trailPositions: [],
-        spawnTime: Date.now(),
-        core: core,
-        innerGlow: innerGlow,
-        outerGlow: outerGlow,
-        trail: trail
+        mesh: bulletGroup, pos: pos.clone(), dir: dir.clone().normalize(), 
+        speed: 0.18, homing: true, core: core, glow: glow
       });
     }
     
@@ -916,73 +820,17 @@
       if (now - boss.lastShot > shotInterval) {
         boss.lastShot = now;
         const toDragon = new THREE.Vector3().subVectors(d.pos, boss.pos).normalize();
-        
-        if (state.difficulty >= 2.5) {
-          for (let i = -2; i <= 2; i++) {
-            const bulletDir = toDragon.clone();
-            bulletDir.x += i * 0.15;
-            bulletDir.y += Math.sin(i * 0.5) * 0.1;
-            bulletDir.normalize();
-            createBullet(boss.pos.clone(), bulletDir);
-          }
-        } else if (state.difficulty >= 1.8) {
-          for (let i = -1; i <= 1; i++) {
-            const bulletDir = toDragon.clone();
-            bulletDir.x += i * 0.2;
-            bulletDir.normalize();
-            createBullet(boss.pos.clone(), bulletDir);
-          }
-          const fastDir = toDragon.clone();
-          fastDir.y += 0.1;
-          const fastBullet = { 
-            mesh: null, pos: boss.pos.clone(), dir: fastDir.normalize(), 
-            speed: 0.25, homing: true, spawnTime: now,
-            trailPositions: [], core: null, innerGlow: null, outerGlow: null, trail: null
-          };
-          createEnhancedBullet(fastBullet);
-        } else {
-          for (let i = -1; i <= 1; i++) {
-            const bulletDir = toDragon.clone();
-            bulletDir.x += i * 0.2;
-            bulletDir.normalize();
-            createBullet(boss.pos.clone(), bulletDir);
-          }
+        for (let i = -1; i <= 1; i++) {
+          const bulletDir = toDragon.clone();
+          bulletDir.x += i * 0.2;
+          bulletDir.normalize();
+          createBullet(boss.pos.clone(), bulletDir);
         }
       }
     }
     
-    function createEnhancedBullet(bulletData) {
-      const bulletGroup = new THREE.Group();
-      
-      const coreGeo = new THREE.SphereGeometry(0.5, 16, 16);
-      const coreMat = new THREE.MeshStandardMaterial({ 
-        color: 0xff0000, 
-        emissive: 0xff0000, 
-        emissiveIntensity: 6
-      });
-      const core = new THREE.Mesh(coreGeo, coreMat);
-      bulletGroup.add(core);
-      
-      const glowGeo = new THREE.SphereGeometry(1.2, 16, 16);
-      const glowMat = new THREE.MeshBasicMaterial({ 
-        color: 0xff3333, transparent: true, opacity: 0.5 
-      });
-      const glow = new THREE.Mesh(glowGeo, glowMat);
-      bulletGroup.add(glow);
-      
-      bulletGroup.position.copy(bulletData.pos);
-      bulletEffectsGroup.add(bulletGroup);
-      
-      bulletData.mesh = bulletGroup;
-      bulletData.core = core;
-      bulletData.innerGlow = glow;
-      bulletData.outerGlow = glow;
-      state.bullets.push(bulletData);
-    }
-    
     function updateBullets(dt) {
       const dragon = state.dragon;
-      const now = Date.now();
       
       for (let i = state.bullets.length - 1; i >= 0; i--) {
         const b = state.bullets[i];
@@ -996,31 +844,6 @@
         b.pos.add(b.dir.clone().multiplyScalar(b.speed * dt * 60));
         b.mesh.position.copy(b.pos);
         
-        const lookTarget = b.pos.clone().add(b.dir);
-        b.mesh.lookAt(lookTarget);
-        
-        const pulse = Math.sin(now * 0.01) * 0.2 + 1;
-        b.core.scale.setScalar(pulse);
-        b.innerGlow.scale.setScalar(1 + Math.sin(now * 0.008) * 0.15);
-        b.outerGlow.scale.setScalar(1 + Math.sin(now * 0.005) * 0.1);
-        
-        const hue = (now * 0.0005) % 1;
-        const color = new THREE.Color().setHSL(0.8 + hue * 0.15, 1, 0.5);
-        b.core.material.emissive.copy(color);
-        b.innerGlow.material.color.copy(color);
-        
-        b.trailPositions.unshift(b.pos.clone());
-        if (b.trailPositions.length > 8) b.trailPositions.pop();
-        
-        const trailPositions = b.trail.geometry.attributes.position.array;
-        for (let j = 0; j < b.trailPositions.length; j++) {
-          const tp = b.trailPositions[j];
-          trailPositions[j * 3] = tp.x - b.pos.x;
-          trailPositions[j * 3 + 1] = tp.y - b.pos.y;
-          trailPositions[j * 3 + 2] = tp.z - b.pos.z;
-        }
-        b.trail.geometry.attributes.position.needsUpdate = true;
-        
         if (b.pos.distanceTo(dragon.pos) < 2.5) {
           if (state.shield) {
             bulletEffectsGroup.remove(b.mesh);
@@ -1031,7 +854,6 @@
             bulletEffectsGroup.remove(b.mesh);
             state.bullets.splice(i, 1);
             updateUI();
-            showShieldUsedEffect();
             continue;
           } else {
             gameOver();
@@ -1052,19 +874,11 @@
       document.getElementById('game-over').style.display = 'flex';
     }
 
-    // 游戏逻辑
     function updateDragon(dt) {
       const d = state.dragon;
       
-      let targetX, targetY;
-      
-      if (state.joystick.active) {
-        targetX = -state.joystick.dx * 6;
-        targetY = state.joystick.dy * 5;
-      } else {
-        targetX = -state.mouse.x * 6 * state.mouseSensitivity;
-        targetY = state.mouse.y * 5 * state.mouseSensitivity;
-      }
+      let targetX = -state.mouse.x * 6 * state.mouseSensitivity;
+      let targetY = state.mouse.y * 5 * state.mouseSensitivity;
       
       d.targetDir.set(targetX, targetY, 1).normalize();
       d.dir.lerp(d.targetDir, 0.6);
@@ -1122,29 +936,19 @@
       updateUI();
     }
     
-    // 龙发射火球攻击BOSS
     function dragonAttack() {
       if (!state.boss) return;
       
       const fireball = new THREE.Group();
-      
       const core = new THREE.Mesh(
         new THREE.SphereGeometry(0.8, 16, 16),
-        new THREE.MeshStandardMaterial({ 
-          color: 0xff6600, 
-          emissive: 0xff3300, 
-          emissiveIntensity: 4 
-        })
+        new THREE.MeshStandardMaterial({ color: 0xff6600, emissive: 0xff3300, emissiveIntensity: 4 })
       );
       fireball.add(core);
       
       const glow = new THREE.Mesh(
         new THREE.SphereGeometry(1.5, 16, 16),
-        new THREE.MeshBasicMaterial({ 
-          color: 0xffaa00, 
-          transparent: true, 
-          opacity: 0.5 
-        })
+        new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.5 })
       );
       fireball.add(glow);
       
@@ -1153,36 +957,26 @@
       fireball.position.copy(startPos);
       
       const targetDir = new THREE.Vector3().subVectors(state.boss.pos, startPos).normalize();
-      
       dragonFireGroup.add(fireball);
       
       state.dragonFireballs.push({
-        mesh: fireball,
-        pos: startPos,
-        dir: targetDir,
-        speed: 0.8,
-        core: core,
-        glow: glow
+        mesh: fireball, pos: startPos, dir: targetDir, speed: 0.8
       });
     }
     
     function updateDragonFireballs(dt) {
       for (let i = state.dragonFireballs.length - 1; i >= 0; i--) {
         const fb = state.dragonFireballs[i];
-        
         fb.pos.add(fb.dir.clone().multiplyScalar(fb.speed * dt * 60));
         fb.mesh.position.copy(fb.pos);
         fb.mesh.rotation.z += 0.2;
         
         if (state.boss && fb.pos.distanceTo(state.boss.pos) < 5) {
           state.bossHealth -= 10;
-          createExplosion(fb.pos);
           dragonFireGroup.remove(fb.mesh);
           state.dragonFireballs.splice(i, 1);
           
-          if (state.bossHealth <= 0) {
-            defeatBoss();
-          }
+          if (state.bossHealth <= 0) defeatBoss();
           continue;
         }
         
@@ -1193,54 +987,11 @@
       }
     }
     
-    function createExplosion(pos) {
-      const explosion = new THREE.Group();
-      
-      for (let i = 0; i < 8; i++) {
-        const particle = new THREE.Mesh(
-          new THREE.SphereGeometry(0.3 + Math.random() * 0.3, 8, 8),
-          new THREE.MeshBasicMaterial({ 
-            color: new THREE.Color().setHSL(0.1 + Math.random() * 0.1, 1, 0.5),
-            transparent: true,
-            opacity: 0.8
-          })
-        );
-        particle.position.set(
-          (Math.random() - 0.5) * 3,
-          (Math.random() - 0.5) * 3,
-          (Math.random() - 0.5) * 3
-        );
-        explosion.add(particle);
-      }
-      
-      explosion.position.copy(pos);
-      scene.add(explosion);
-      
-      let scale = 1;
-      const animate = () => {
-        scale += 0.1;
-        explosion.scale.setScalar(scale);
-        explosion.children.forEach(p => {
-          p.material.opacity -= 0.05;
-        });
-        
-        if (scale < 3) {
-          requestAnimationFrame(animate);
-        } else {
-          scene.remove(explosion);
-        }
-      };
-      animate();
-    }
-    
     function defeatBoss() {
       if (!state.boss) return;
-      
-      createExplosion(state.boss.pos);
       bossGroup.remove(state.boss.mesh);
       state.boss = null;
       state.bossHealth = 0;
-      
       state.score += 100;
       
       const alert = document.getElementById('boss-warning');
@@ -1255,18 +1006,7 @@
       
       updateUI();
     }
-    
-    function showShieldUsedEffect() {
-      const shieldEl = document.getElementById('food-shield');
-      if (shieldEl) {
-        shieldEl.style.animation = 'none';
-        setTimeout(() => {
-          shieldEl.style.animation = 'shieldFlash 0.5s ease';
-        }, 10);
-      }
-    }
 
-    // 相机
     function updateCamera() {
       const d = state.dragon;
       const dist = Math.max(15, d.length * 0.6);
@@ -1282,7 +1022,6 @@
       camera.lookAt(d.pos.x + d.dir.x*5, d.pos.y, d.pos.z + d.dir.z*5);
     }
 
-    // UI更新
     function updateUI() {
       document.getElementById('score').textContent = state.score;
       document.getElementById('length').textContent = state.dragon.length;
@@ -1291,15 +1030,7 @@
       document.getElementById('boost').style.display = state.boosting ? 'block' : 'none';
       
       const diffLevel = Math.floor(state.difficulty);
-      const diffEl = document.getElementById('difficulty');
-      diffEl.textContent = 'Lv.' + diffLevel;
-      if (diffLevel >= 3) {
-        diffEl.style.background = 'linear-gradient(45deg, #ff0000, #990000)';
-      } else if (diffLevel >= 2) {
-        diffEl.style.background = 'linear-gradient(45deg, #ff6600, #cc3300)';
-      } else {
-        diffEl.style.background = 'linear-gradient(45deg, #6600ff, #9900cc)';
-      }
+      document.getElementById('difficulty').textContent = 'Lv.' + diffLevel;
       
       const shieldEl = document.getElementById('food-shield');
       shieldEl.textContent = '🛡️ x' + state.foodShield;
@@ -1308,20 +1039,17 @@
       const bossHealthBar = document.getElementById('boss-health-bar');
       const bossHealthFill = document.getElementById('boss-health-fill');
       const attackBtn = document.getElementById('attack-btn');
+      
       if (state.boss && state.bossHealth > 0) {
         bossHealthBar.style.display = 'block';
-        const healthPercent = (state.bossHealth / state.bossMaxHealth) * 100;
-        bossHealthFill.style.width = healthPercent + '%';
-        if (isTouchDevice) {
-          attackBtn.style.display = 'flex';
-        }
+        bossHealthFill.style.width = (state.bossHealth / state.bossMaxHealth * 100) + '%';
+        if (isTouchDevice) attackBtn.style.display = 'flex';
       } else {
         bossHealthBar.style.display = 'none';
         attackBtn.style.display = 'none';
       }
     }
 
-    // 游戏控制
     function startGame() {
       document.getElementById('start-screen').style.display = 'none';
       document.getElementById('game-ui').style.display = 'block';
@@ -1374,212 +1102,34 @@
       btn.className = state.shield ? 'ctrl-btn shield-on' : 'ctrl-btn';
     }
 
-    // 横竖屏切换 - 简化版，用户可自由调节
-    let isRotated = false;
-    function toggleOrientation() {
-      const container = document.getElementById('game-container');
-      isRotated = !isRotated;
-      
-      if (isRotated) {
-        // 旋转90度
-        container.style.transform = 'rotate(90deg)';
-        container.style.transformOrigin = 'center center';
-        container.style.width = '100vh';
-        container.style.height = '100vw';
-      } else {
-        // 恢复正常
-        container.style.transform = '';
-        container.style.width = '100vw';
-        container.style.height = '100vh';
-      }
-      
-      // 重新调整canvas大小
-      setTimeout(() => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      }, 100);
-    }
-
-    // 虚拟操纵杆
-    const joystick = document.getElementById('joystick');
-    const joystickStick = document.getElementById('joystick-stick');
-    let joystickCenter = { x: 0, y: 0 };
-    const maxJoystickDist = 45;
-    let joystickTouchId = null;
-
-    function showJoystick(x, y) {
-      joystick.style.left = (x - 70) + 'px';
-      joystick.style.top = (y - 70) + 'px';
-      joystick.classList.add('active');
-      joystickCenter = { x: x, y: y };
-    }
-
-    function hideJoystick() {
-      joystick.classList.remove('active');
-      state.joystick.active = false;
-      state.joystick.dx = 0;
-      state.joystick.dy = 0;
-      joystickStick.style.transform = 'translate(-50%, -50%)';
-      joystickTouchId = null;
-    }
-
-    function updateJoystick(touch) {
-      const dx = touch.clientX - joystickCenter.x;
-      const dy = touch.clientY - joystickCenter.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const clampedDist = Math.min(dist, maxJoystickDist);
-      const angle = Math.atan2(dy, dx);
-      
-      const stickX = Math.cos(angle) * clampedDist;
-      const stickY = Math.sin(angle) * clampedDist;
-      
-      joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
-      
-      state.joystick.dx = stickX / maxJoystickDist;
-      state.joystick.dy = -(stickY / maxJoystickDist);
-    }
-
-    // 触摸事件
-    const gameContainer = document.getElementById('game-container');
+    // 事件绑定
+    document.getElementById('start-btn').addEventListener('click', startGame);
+    document.getElementById('pause-btn').addEventListener('click', togglePause);
+    document.getElementById('shield-btn').addEventListener('click', toggleShield);
+    document.getElementById('pause-overlay').addEventListener('click', togglePause);
+    document.getElementById('game-over').addEventListener('click', () => location.reload());
     
-    gameContainer.addEventListener('touchstart', (e) => {
-      if (!state.playing || state.paused) return;
-      
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.clientX < window.innerWidth * 0.5 && !joystickTouchId) {
-          const boostBtn = document.getElementById('boost-btn');
-          const pauseBtn = document.getElementById('pause-btn');
-          const shieldBtn = document.getElementById('shield-btn');
-          
-          const boostRect = boostBtn.getBoundingClientRect();
-          const pauseRect = pauseBtn.getBoundingClientRect();
-          const shieldRect = shieldBtn.getBoundingClientRect();
-          
-          const inBoost = touch.clientX >= boostRect.left && touch.clientX <= boostRect.right &&
-                         touch.clientY >= boostRect.top && touch.clientY <= boostRect.bottom;
-          const inPause = touch.clientX >= pauseRect.left && touch.clientX <= pauseRect.right &&
-                         touch.clientY >= pauseRect.top && touch.clientY <= pauseRect.bottom;
-          const inShield = touch.clientX >= shieldRect.left && touch.clientX <= shieldRect.right &&
-                          touch.clientY >= shieldRect.top && touch.clientY <= shieldRect.bottom;
-          
-          if (!inBoost && !inPause && !inShield) {
-            e.preventDefault();
-            joystickTouchId = touch.identifier;
-            state.joystick.active = true;
-            showJoystick(touch.clientX, touch.clientY);
-            updateJoystick(touch);
-          }
-        }
-      }
-    }, { passive: false });
-
-    gameContainer.addEventListener('touchmove', (e) => {
-      if (!state.playing || state.paused || !joystickTouchId) return;
-      
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === joystickTouchId) {
-          e.preventDefault();
-          updateJoystick(touch);
-          break;
-        }
-      }
-    }, { passive: false });
-
-    gameContainer.addEventListener('touchend', (e) => {
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === joystickTouchId) {
-          e.preventDefault();
-          hideJoystick();
-          break;
-        }
-      }
-    });
-
-    gameContainer.addEventListener('touchcancel', (e) => {
-      for (let i = 0; i < e.changedTouches.length; i++) {
-        const touch = e.changedTouches[i];
-        if (touch.identifier === joystickTouchId) {
-          hideJoystick();
-          break;
-        }
-      }
-    });
-
     // 加速按钮
     const boostBtn = document.getElementById('boost-btn');
-    
-    boostBtn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      state.boosting = true;
-      boostBtn.classList.add('active');
-    }, { passive: false });
-
-    boostBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      state.boosting = false;
-      boostBtn.classList.remove('active');
-    });
+    boostBtn.addEventListener('touchstart', (e) => { e.preventDefault(); state.boosting = true; boostBtn.style.transform = 'scale(0.9)'; });
+    boostBtn.addEventListener('touchend', (e) => { e.preventDefault(); state.boosting = false; boostBtn.style.transform = 'scale(1)'; });
     
     // 攻击按钮
     const attackBtn = document.getElementById('attack-btn');
+    attackBtn.addEventListener('touchstart', (e) => { e.preventDefault(); dragonAttack(); attackBtn.style.transform = 'scale(0.9)'; });
+    attackBtn.addEventListener('touchend', (e) => { e.preventDefault(); attackBtn.style.transform = 'scale(1)'; });
     
-    attackBtn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (state.boss) {
-        dragonAttack();
-        attackBtn.style.transform = 'scale(0.9)';
-      }
-    }, { passive: false });
-    
-    attackBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      attackBtn.style.transform = 'scale(1)';
-    });
-    
-    // 开始按钮
-    document.getElementById('start-btn').addEventListener('click', startGame);
-    
-    // 暂停按钮
-    document.getElementById('pause-btn').addEventListener('click', togglePause);
-    
-    // 护盾按钮
-    document.getElementById('shield-btn').addEventListener('click', toggleShield);
-    
-    // 旋转按钮
-    document.getElementById('rotate-btn').addEventListener('click', toggleOrientation);
-    
-    // 暂停遮罩点击继续
-    document.getElementById('pause-overlay').addEventListener('click', togglePause);
-    
-    // 游戏结束点击重新开始
-    document.getElementById('game-over').addEventListener('click', () => location.reload());
-    
-    // 桌面端：空格键攻击BOSS
+    // 键盘事件
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        togglePause();
-      }
-      if (e.code === 'KeyZ' || e.code === 'KeyX') {
-        e.preventDefault();
-        if (state.boss) {
-          dragonAttack();
-        }
-      }
+      if (e.code === 'Space') { e.preventDefault(); togglePause(); }
+      if (e.code === 'KeyZ' || e.code === 'KeyX') { e.preventDefault(); dragonAttack(); }
     });
 
-    // 鼠标事件 (桌面)
+    // 鼠标事件
     document.addEventListener('mousemove', (e) => {
-      if (!state.playing || state.paused || state.joystick.active) return;
-      const rawX = (e.clientX / window.innerWidth) * 2 - 1;
-      const rawY = -(e.clientY / window.innerHeight) * 2 + 1;
-      
-      state.mouse.x += (rawX - state.mouse.x) * 0.3;
-      state.mouse.y += (rawY - state.mouse.y) * 0.3;
+      if (!state.playing || state.paused) return;
+      state.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      state.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     });
     
     document.addEventListener('mousedown', (e) => {
@@ -1591,13 +1141,35 @@
       if (e.button === 0) state.boosting = false;
     });
     
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    // 触摸事件 - 全屏触摸控制
+    let touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+      if (!state.playing || state.paused) return;
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      
+      // 右半边屏幕是加速
+      if (touch.clientX > window.innerWidth * 0.7 && touch.clientY > window.innerHeight * 0.5) {
+        state.boosting = true;
+      }
+    }, { passive: false });
     
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    document.addEventListener('touchmove', (e) => {
+      if (!state.playing || state.paused) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      const deltaX = (touch.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+      const deltaY = -(touch.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+      state.mouse.x = deltaX;
+      state.mouse.y = deltaY;
+    }, { passive: false });
+    
+    document.addEventListener('touchend', () => {
+      state.boosting = false;
     });
+    
+    window.addEventListener('resize', resizeRenderer);
 
     // 游戏循环
     let lastTime = performance.now();
@@ -1618,8 +1190,7 @@
         
         if (starsMesh) starsMesh.position.copy(state.dragon.pos);
         
-        const bossThreshold = Math.max(30, 50 - Math.floor((state.difficulty - 1) * 10));
-        if (state.score >= bossThreshold && !state.boss) spawnBoss();
+        if (state.score >= 50 && !state.boss) spawnBoss();
         
         updateBoss(dt);
         updateBullets(dt);
