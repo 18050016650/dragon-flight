@@ -36,6 +36,15 @@
     .start-btn { padding: 18px 60px; font-size: 22px; font-weight: bold; color: #1a1a4e; background: linear-gradient(45deg, #ffd700, #ff6b00); border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; -webkit-tap-highlight-color: transparent; }
     .start-btn:active { transform: scale(0.95); }
     
+    /* 设置面板 */
+    .settings-panel { background: rgba(0,0,0,0.8); border: 1px solid rgba(255,215,0,0.4); border-radius: 15px; padding: 20px; margin-bottom: 15px; width: 90%; max-width: 400px; }
+    .settings-panel h3 { color: #ffd700; margin-bottom: 15px; font-size: 16px; text-align: center; }
+    .setting-item { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; }
+    .setting-label { color: #fff; font-size: 14px; }
+    .setting-slider { width: 150px; height: 8px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 4px; outline: none; }
+    .setting-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: linear-gradient(45deg, #ffd700, #ff6b00); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+    .setting-value { color: #00ffff; font-size: 14px; min-width: 40px; text-align: right; }
+    
     /* 游戏UI */
     #game-ui { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
     .top-stats { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 101; }
@@ -43,8 +52,47 @@
     .stat-label { font-size: 11px; color: #aaa; }
     .stat-value { font-size: 16px; color: #ffd700; font-weight: bold; }
     
+    /* 虚拟摇杆 */
+    .joystick-container {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      width: 150px;
+      height: 150px;
+      display: none;
+      pointer-events: auto;
+      z-index: 102;
+    }
+    .joystick-base {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,215,0,0.4);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .joystick-stick {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #ffd700, #ff6b00);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 15px rgba(255,215,0,0.6);
+      transition: none;
+    }
+    .joystick-stick.active {
+      background: linear-gradient(45deg, #ff6b00, #ff0000);
+      box-shadow: 0 0 25px rgba(255,107,0,0.8);
+    }
+    
     /* 控制按钮 */
-    .mobile-controls { position: absolute; bottom: 80px; right: 20px; display: none; flex-direction: column; gap: 15px; pointer-events: auto; }
+    .mobile-controls { position: absolute; bottom: 40px; right: 30px; display: none; flex-direction: column; gap: 20px; pointer-events: auto; z-index: 102; }
     .control-btn { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
     .boost-btn { background: linear-gradient(45deg, #ff6b00, #ff0000); box-shadow: 0 0 20px rgba(255,107,0,0.5); }
     .attack-btn { background: linear-gradient(45deg, #00ffff, #0099ff); box-shadow: 0 0 20px rgba(0,255,255,0.5); }
@@ -56,9 +104,63 @@
     #game-over h1 { font-size: 42px; color: #ff0000; margin-bottom: 15px; }
     .final-score { font-size: 22px; color: #ffd700; }
     
+    /* 横屏按钮 */
+    .rotate-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(45deg, #9c27b0, #e91e63);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(156,39,176,0.5);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .rotate-btn:active { transform: scale(0.9); }
+    
+    /* 横屏提示 */
+    #rotate-hint {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    #rotate-hint .phone-icon {
+      font-size: 80px;
+      animation: rotatePhone 2s ease-in-out infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes rotatePhone {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(90deg); }
+    }
+    #rotate-hint p { font-size: 18px; color: #ffd700; }
+    
     /* 手机端显示控制 */
     @media (max-width: 767px) {
       .mobile-controls { display: flex !important; }
+      .joystick-container { display: block !important; }
+    }
+    
+    /* 竖屏时显示提示 */
+    @media (orientation: portrait) and (max-width: 767px) {
+      #rotate-hint { display: flex !important; }
     }
   </style>
 </head>
@@ -66,16 +168,39 @@
   <div id="game-container">
     <canvas id="canvas"></canvas>
     
+    <!-- 横屏提示 -->
+    <div id="rotate-hint">
+      <div class="phone-icon">📱</div>
+      <p>请旋转手机至横屏</p>
+    </div>
+    
     <!-- 开始界面 -->
     <div id="start-screen">
+      <button class="rotate-btn" id="rotate-btn" title="切换横屏">🔄</button>
       <div class="main-title">🐉 神龙飞行</div>
       <div class="sub-title">DRAGON FLIGHT 3D</div>
       <div class="info-box">
         <h3>🎮 操作说明</h3>
-        <p>📱 滑动屏幕 - 控制方向</p>
+        <p>🕹️ 左下角摇杆 - 控制方向</p>
         <p>🔥 右下角按钮 - 加速</p>
         <p>⚔️ 攻击按钮 - 攻击BOSS</p>
       </div>
+      
+      <!-- 设置面板 -->
+      <div class="settings-panel">
+        <h3>⚙️ 游戏设置</h3>
+        <div class="setting-item">
+          <span class="setting-label">操纵灵敏度</span>
+          <input type="range" class="setting-slider" id="sensitivity-slider" min="0.5" max="3" step="0.1" value="1.5">
+          <span class="setting-value" id="sensitivity-value">1.5</span>
+        </div>
+        <div class="setting-item">
+          <span class="setting-label">画质等级</span>
+          <input type="range" class="setting-slider" id="quality-slider" min="1" max="3" step="1" value="2">
+          <span class="setting-value" id="quality-value">中</span>
+        </div>
+      </div>
+      
       <button class="start-btn" id="start-btn">开始游戏</button>
     </div>
     
@@ -85,6 +210,13 @@
         <div class="stat-item"><div class="stat-label">分数</div><div class="stat-value" id="score">0</div></div>
         <div class="stat-item"><div class="stat-label">长度</div><div class="stat-value" id="length">20</div></div>
       </div>
+      
+      <!-- 虚拟摇杆 -->
+      <div class="joystick-container" id="joystick">
+        <div class="joystick-base"></div>
+        <div class="joystick-stick" id="joystick-stick"></div>
+      </div>
+      
       <div class="mobile-controls">
         <div class="control-btn attack-btn" id="attack-btn">⚔️</div>
         <div class="control-btn boost-btn" id="boost-btn">🔥</div>
@@ -103,7 +235,8 @@
       playing: false, paused: false, score: 0,
       mouse: { x: 0, y: 0 }, boosting: false,
       dragon: { pos: new THREE.Vector3(0,0,0), dir: new THREE.Vector3(0,0,1), targetDir: new THREE.Vector3(0,0,1), speed: 0.15, length: 20 },
-      foods: [], obstacles: [], bodySegments: [], difficulty: 1
+      foods: [], obstacles: [], bodySegments: [], difficulty: 1,
+      sensitivity: 1.5, quality: 2
     };
 
     // Three.js 初始化
@@ -112,7 +245,17 @@
     scene.fog = new THREE.FogExp2(0x1a1a4e, 0.015);
     
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    const renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      antialias: true,
+      alpha: false,
+      powerPreference: "high-performance"
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     
     function resize() {
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -122,21 +265,58 @@
     resize();
     window.addEventListener('resize', resize);
     
-    scene.add(new THREE.AmbientLight(0x666666, 1.2));
-    const light = new THREE.DirectionalLight(0xffffff, 1.5);
+    // 高品质光照
+    scene.add(new THREE.AmbientLight(0x888888, 1.5));
+    
+    const light = new THREE.DirectionalLight(0xffffff, 2.0);
     light.position.set(10, 20, 10);
+    light.castShadow = true;
+    light.shadow.mapSize.width = 2048;
+    light.shadow.mapSize.height = 2048;
+    light.shadow.camera.near = 0.5;
+    light.shadow.camera.far = 500;
     scene.add(light);
-    const backLight = new THREE.DirectionalLight(0xffd700, 0.8);
+    
+    const backLight = new THREE.DirectionalLight(0xffd700, 1.0);
     backLight.position.set(-10, 10, -10);
+    
+    // 添加点光源增强效果
+    const pointLight1 = new THREE.PointLight(0x00ffff, 0.8, 50);
+    pointLight1.position.set(0, 10, 10);
+    scene.add(pointLight1);
     scene.add(backLight);
     scene.add(light);
 
-    // 星空
+    // 高品质星空
     const starsGeo = new THREE.BufferGeometry();
     const starsPos = [];
-    for (let i = 0; i < 3000; i++) starsPos.push((Math.random()-0.5)*400, (Math.random()-0.5)*400, (Math.random()-0.5)*400);
+    const starsColors = [];
+    const starsSizes = [];
+    for (let i = 0; i < 5000; i++) {
+      starsPos.push((Math.random()-0.5)*600, (Math.random()-0.5)*600, (Math.random()-0.5)*600);
+      // 随机星星颜色（蓝白黄）
+      const colorType = Math.random();
+      if (colorType < 0.7) {
+        starsColors.push(1, 1, 1); // 白色
+      } else if (colorType < 0.85) {
+        starsColors.push(0.7, 0.8, 1); // 蓝色
+      } else {
+        starsColors.push(1, 0.9, 0.7); // 黄色
+      }
+      starsSizes.push(Math.random() * 1.5 + 0.5);
+    }
     starsGeo.setAttribute('position', new THREE.Float32BufferAttribute(starsPos, 3));
-    const starsMesh = new THREE.Points(starsGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 }));
+    starsGeo.setAttribute('color', new THREE.Float32BufferAttribute(starsColors, 3));
+    starsGeo.setAttribute('size', new THREE.Float32BufferAttribute(starsSizes, 1));
+    
+    const starsMaterial = new THREE.PointsMaterial({ 
+      size: 1.0,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9,
+      sizeAttenuation: true
+    });
+    const starsMesh = new THREE.Points(starsGeo, starsMaterial);
     scene.add(starsMesh);
 
     // 龙
@@ -145,16 +325,72 @@
     
     function createHead() {
       const head = new THREE.Group();
-      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.15, emissive: 0xffaa00, emissiveIntensity: 0.3 });
-      const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 2.2), bodyMat);
+      
+      // 高品质金色材质
+      const bodyMat = new THREE.MeshPhysicalMaterial({ 
+        color: 0xffd700, 
+        metalness: 1.0, 
+        roughness: 0.1, 
+        emissive: 0xff8800, 
+        emissiveIntensity: 0.4,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.1,
+        reflectivity: 1.0
+      });
+      
+      // 龙头主体 - 使用更多面数
+      const bodyGeo = new THREE.BoxGeometry(1.8, 1.4, 2.2, 2, 2, 2);
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.castShadow = true;
+      body.receiveShadow = true;
       head.add(body);
-      const eyeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 5 });
-      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
+      
+      // 龙角
+      const hornMat = new THREE.MeshPhysicalMaterial({ 
+        color: 0xffaa00, 
+        metalness: 0.8, 
+        roughness: 0.2,
+        emissive: 0xff6600,
+        emissiveIntensity: 0.3
+      });
+      const leftHorn = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.8, 8), hornMat);
+      leftHorn.position.set(-0.6, 1.0, 0.5);
+      leftHorn.rotation.x = -0.3;
+      head.add(leftHorn);
+      
+      const rightHorn = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.8, 8), hornMat);
+      rightHorn.position.set(0.6, 1.0, 0.5);
+      rightHorn.rotation.x = -0.3;
+      head.add(rightHorn);
+      
+      // 发光眼睛
+      const eyeMat = new THREE.MeshStandardMaterial({ 
+        color: 0xff0000, 
+        emissive: 0xff0000, 
+        emissiveIntensity: 8 
+      });
+      const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), eyeMat);
       leftEye.position.set(-0.7, 0.3, 0.4);
       head.add(leftEye);
-      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 16, 16), eyeMat);
+      
+      const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), eyeMat);
       rightEye.position.set(0.7, 0.3, 0.4);
       head.add(rightEye);
+      
+      // 龙须
+      const whiskerMat = new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xffaa00, emissiveIntensity: 0.5 });
+      const leftWhisker = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.5, 6), whiskerMat);
+      leftWhisker.position.set(-0.9, -0.2, 0.8);
+      leftWhisker.rotation.z = 0.5;
+      leftWhisker.rotation.x = 0.3;
+      head.add(leftWhisker);
+      
+      const rightWhisker = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.5, 6), whiskerMat);
+      rightWhisker.position.set(0.9, -0.2, 0.8);
+      rightWhisker.rotation.z = -0.5;
+      rightWhisker.rotation.x = 0.3;
+      head.add(rightWhisker);
+      
       return head;
     }
     const dragonHead = createHead();
@@ -163,9 +399,38 @@
     function createSegment(i, total) {
       const scale = Math.max(0.4, 1 - i/total * 0.6);
       const seg = new THREE.Group();
-      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2, emissive: 0xffaa00, emissiveIntensity: 0.2 });
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 12).rotateX(Math.PI/2), bodyMat);
+      
+      // 高品质身体材质
+      const bodyMat = new THREE.MeshPhysicalMaterial({ 
+        color: 0xffd700, 
+        metalness: 0.9, 
+        roughness: 0.15, 
+        emissive: 0xffaa00, 
+        emissiveIntensity: 0.3,
+        clearcoat: 0.8,
+        clearcoatRoughness: 0.2
+      });
+      
+      // 增加面数
+      const bodyGeo = new THREE.CylinderGeometry(scale*0.75, scale*0.85, 0.7, 16).rotateX(Math.PI/2);
+      const body = new THREE.Mesh(bodyGeo, bodyMat);
+      body.castShadow = true;
+      body.receiveShadow = true;
       seg.add(body);
+      
+      // 添加龙鳞装饰
+      if (i % 3 === 0) {
+        const scaleMat = new THREE.MeshStandardMaterial({ 
+          color: 0xffaa00, 
+          emissive: 0xff6600, 
+          emissiveIntensity: 0.4 
+        });
+        const scaleGeo = new THREE.ConeGeometry(scale*0.3, scale*0.4, 6);
+        const scaleMesh = new THREE.Mesh(scaleGeo, scaleMat);
+        scaleMesh.position.set(0, scale*0.9, 0);
+        seg.add(scaleMesh);
+      }
+      
       return seg;
     }
     
@@ -185,7 +450,31 @@
     scene.add(foodGroup);
     function spawnFood() {
       if (state.foods.length >= 10) return;
-      const food = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x00ffff, emissiveIntensity: 2 }));
+      
+      // 高品质发光食物
+      const foodMat = new THREE.MeshPhysicalMaterial({ 
+        color: 0x00ffff, 
+        emissive: 0x00ffff, 
+        emissiveIntensity: 3,
+        metalness: 0.5,
+        roughness: 0.1,
+        clearcoat: 1.0,
+        transparent: true,
+        opacity: 0.9
+      });
+      
+      const food = new THREE.Mesh(new THREE.SphereGeometry(1.2, 24, 24), foodMat);
+      
+      // 添加光晕效果
+      const glowGeo = new THREE.SphereGeometry(2, 16, 16);
+      const glowMat = new THREE.MeshBasicMaterial({ 
+        color: 0x00ffff, 
+        transparent: true, 
+        opacity: 0.2 
+      });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      food.add(glow);
+      
       const pos = new THREE.Vector3((Math.random()-0.5)*30, (Math.random()-0.5)*20, state.dragon.pos.z + 50 + Math.random()*50);
       food.position.copy(pos);
       foodGroup.add(food);
@@ -197,7 +486,20 @@
     scene.add(obstacleGroup);
     function spawnObstacle() {
       if (state.obstacles.length >= 5) return;
-      const obs = new THREE.Mesh(new THREE.DodecahedronGeometry(2 + Math.random()*2), new THREE.MeshStandardMaterial({ color: 0x666666 }));
+      
+      // 高品质障碍物
+      const size = 2 + Math.random()*2;
+      const obsMat = new THREE.MeshPhysicalMaterial({ 
+        color: 0x444444,
+        metalness: 0.8,
+        roughness: 0.4,
+        clearcoat: 0.3
+      });
+      
+      const obs = new THREE.Mesh(new THREE.DodecahedronGeometry(size, 1), obsMat);
+      obs.castShadow = true;
+      obs.receiveShadow = true;
+      
       const pos = new THREE.Vector3((Math.random()-0.5)*40, (Math.random()-0.5)*20, state.dragon.pos.z + 60 + Math.random()*40);
       obs.position.copy(pos);
       obstacleGroup.add(obs);
@@ -271,6 +573,7 @@
       state.foods.forEach(f => foodGroup.remove(f.mesh)); state.foods = [];
       state.obstacles.forEach(o => obstacleGroup.remove(o.mesh)); state.obstacles = [];
       initBody(); updateUI();
+      initJoystick(); // 初始化摇杆位置
       lastTime = performance.now();
       gameLoop();
     }
@@ -279,27 +582,174 @@
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('start-btn').addEventListener('touchstart', function(e){ e.preventDefault(); startGame(); });
     
-    // 触摸控制 - 绑定到canvas
-    let isTouching = false;
-    canvas.addEventListener('touchstart', function(e) {
+    // 横屏切换按钮
+    const rotateBtn = document.getElementById('rotate-btn');
+    let isLandscape = false;
+    
+    function toggleFullscreen() {
+      const doc = document;
+      const docEl = doc.documentElement;
+      
+      // 尝试进入全屏
+      const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+      if (requestFullScreen) {
+        requestFullScreen.call(docEl).catch(() => {});
+      }
+      
+      // 尝试锁定屏幕方向
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+      
+      // CSS旋转 - 全覆盖版本
+      isLandscape = !isLandscape;
+      if (isLandscape) {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        
+        // 设置body旋转并放大填满屏幕
+        document.body.style.position = 'fixed';
+        document.body.style.top = '0';
+        document.body.style.left = '0';
+        document.body.style.width = vh + 'px';
+        document.body.style.height = vw + 'px';
+        document.body.style.transform = `rotate(90deg) translate(${(vh-vw)/2}px, ${(vh-vw)/2}px)`;
+        document.body.style.transformOrigin = 'center center';
+        document.body.style.overflow = 'hidden';
+        
+        // 游戏容器也调整
+        const gameContainer = document.getElementById('game-container');
+        gameContainer.style.width = vh + 'px';
+        gameContainer.style.height = vw + 'px';
+        
+        rotateBtn.textContent = '↩️';
+      } else {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.body.style.transform = '';
+        document.body.style.transformOrigin = '';
+        document.body.style.overflow = '';
+        
+        const gameContainer = document.getElementById('game-container');
+        gameContainer.style.width = '';
+        gameContainer.style.height = '';
+        
+        rotateBtn.textContent = '🔄';
+      }
+      
+      // 重新调整canvas大小
+      setTimeout(() => {
+        onWindowResize();
+      }, 100);
+    }
+    
+    rotateBtn.addEventListener('click', toggleFullscreen);
+    rotateBtn.addEventListener('touchstart', function(e) { e.preventDefault(); toggleFullscreen(); });
+    
+    // 设置面板控制
+    const sensitivitySlider = document.getElementById('sensitivity-slider');
+    const sensitivityValue = document.getElementById('sensitivity-value');
+    sensitivitySlider.addEventListener('input', function() {
+      state.sensitivity = parseFloat(this.value);
+      sensitivityValue.textContent = state.sensitivity.toFixed(1);
+    });
+    
+    const qualitySlider = document.getElementById('quality-slider');
+    const qualityValue = document.getElementById('quality-value');
+    const qualityLabels = {1: '低', 2: '中', 3: '高'};
+    qualitySlider.addEventListener('input', function() {
+      state.quality = parseInt(this.value);
+      qualityValue.textContent = qualityLabels[state.quality];
+      updateQuality();
+    });
+    
+    function updateQuality() {
+      if (state.quality === 1) {
+        // 低画质
+        renderer.setPixelRatio(1);
+        renderer.shadowMap.enabled = false;
+        scene.fog.density = 0.02;
+      } else if (state.quality === 2) {
+        // 中画质
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.shadowMap.enabled = true;
+        scene.fog.density = 0.015;
+      } else {
+        // 高画质
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        scene.fog.density = 0.01;
+      }
+      renderer.shadowMap.needsUpdate = true;
+    }
+    
+    // 虚拟摇杆控制
+    const joystick = document.getElementById('joystick');
+    const joystickStick = document.getElementById('joystick-stick');
+    let joystickActive = false;
+    let joystickCenter = { x: 0, y: 0 };
+    
+    function initJoystick() {
+      const rect = joystick.getBoundingClientRect();
+      joystickCenter = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+    }
+    
+    function handleJoystickStart(e) {
       if (!state.playing || state.paused) return;
-      isTouching = true;
-      const touch = e.touches[0];
-      state.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
-      state.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
-    }, {passive: false});
-    
-    canvas.addEventListener('touchmove', function(e) {
-      if (!state.playing || state.paused || !isTouching) return;
       e.preventDefault();
-      const touch = e.touches[0];
-      state.mouse.x = (touch.clientX / window.innerWidth) * 2 - 1;
-      state.mouse.y = -(touch.clientY / window.innerHeight) * 2 + 1;
-    }, {passive: false});
+      joystickActive = true;
+      joystickStick.classList.add('active');
+      updateJoystick(e);
+    }
     
-    canvas.addEventListener('touchend', function() { isTouching = false; state.boosting = false; });
+    function handleJoystickMove(e) {
+      if (!joystickActive || !state.playing) return;
+      e.preventDefault();
+      updateJoystick(e);
+    }
     
-    // 鼠标控制
+    function handleJoystickEnd(e) {
+      if(e) e.preventDefault();
+      joystickActive = false;
+      joystickStick.classList.remove('active');
+      joystickStick.style.transform = 'translate(-50%, -50%)';
+      state.mouse.x = 0;
+      state.mouse.y = 0;
+    }
+    
+    function updateJoystick(e) {
+      const touch = e.touches ? e.touches[0] : e;
+      const rect = joystick.getBoundingClientRect();
+      const centerX = rect.left + rect.width/2;
+      const centerY = rect.top + rect.height/2;
+      
+      let dx = touch.clientX - centerX;
+      let dy = touch.clientY - centerY;
+      
+      const maxDist = 35;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      
+      if (dist > maxDist) {
+        dx = (dx / dist) * maxDist;
+        dy = (dy / dist) * maxDist;
+      }
+      
+      joystickStick.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+      
+      // 转换为 -1 到 1 的范围，应用灵敏度
+      state.mouse.x = (dx / maxDist) * state.sensitivity;
+      state.mouse.y = -(dy / maxDist) * state.sensitivity; // Y轴反转
+    }
+    
+    joystick.addEventListener('touchstart', handleJoystickStart, {passive: false});
+    joystick.addEventListener('touchmove', handleJoystickMove, {passive: false});
+    joystick.addEventListener('touchend', handleJoystickEnd, {passive: false});
+    joystick.addEventListener('touchcancel', handleJoystickEnd, {passive: false});
+    
+    // 鼠标控制（桌面）
     document.addEventListener('mousemove', function(e) {
       if (!state.playing || state.paused) return;
       state.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -310,14 +760,18 @@
     
     // 按钮控制
     const boostBtn = document.getElementById('boost-btn');
-    boostBtn.addEventListener('touchstart', function(e) { e.preventDefault(); state.boosting = true; this.style.transform = 'scale(0.9)'; });
-    boostBtn.addEventListener('touchend', function(e) { e.preventDefault(); state.boosting = false; this.style.transform = 'scale(1)'; });
-    boostBtn.addEventListener('mousedown', function() { state.boosting = true; this.style.transform = 'scale(0.9)'; });
-    boostBtn.addEventListener('mouseup', function() { state.boosting = false; this.style.transform = 'scale(1)'; });
+    function startBoost(e) { if(e) e.preventDefault(); state.boosting = true; boostBtn.style.transform = 'scale(0.9)'; }
+    function endBoost(e) { if(e) e.preventDefault(); state.boosting = false; boostBtn.style.transform = 'scale(1)'; }
+    boostBtn.addEventListener('touchstart', startBoost, {passive: false});
+    boostBtn.addEventListener('touchend', endBoost, {passive: false});
+    boostBtn.addEventListener('mousedown', startBoost);
+    boostBtn.addEventListener('mouseup', endBoost);
+    boostBtn.addEventListener('mouseleave', endBoost);
     
     const attackBtn = document.getElementById('attack-btn');
-    attackBtn.addEventListener('touchstart', function(e) { e.preventDefault(); this.style.transform = 'scale(0.9)'; setTimeout(() => this.style.transform = 'scale(1)', 150); });
-    attackBtn.addEventListener('mousedown', function() { this.style.transform = 'scale(0.9)'; setTimeout(() => this.style.transform = 'scale(1)', 150); });
+    function doAttack(e) { if(e) e.preventDefault(); attackBtn.style.transform = 'scale(0.9)'; setTimeout(() => attackBtn.style.transform = 'scale(1)', 150); }
+    attackBtn.addEventListener('touchstart', doAttack, {passive: false});
+    attackBtn.addEventListener('mousedown', doAttack);
 
     // 游戏循环
     let lastTime = performance.now();
