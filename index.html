@@ -10,38 +10,46 @@
     #game-container { width: 100vw; height: 100vh; position: relative; }
     canvas { display: block; }
     
-    /* 强制横屏 */
-    @media screen and (orientation: portrait) {
-      body {
-        transform: rotate(90deg);
-        transform-origin: 50% 50%;
-        width: 100vh;
-        height: 100vw;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        margin-top: -50vw;
-        margin-left: -50vh;
-      }
-      #game-container {
-        width: 100vh;
-        height: 100vw;
-      }
+    /* 横竖屏适配 - 使用JavaScript处理 */
+    .orientation-hint {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #000;
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 18px;
+      text-align: center;
+    }
+    
+    .orientation-hint .rotate-icon {
+      font-size: 60px;
+      margin-bottom: 20px;
+      animation: rotatePhone 2s infinite;
+    }
+    
+    @keyframes rotatePhone {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(90deg); }
     }
     
     /* 开始界面 */
     #start-screen {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
       background: linear-gradient(135deg, #1a0a4e 0%, #0a0a2e 50%, #000 100%);
       z-index: 100;
-      padding: 20px;
+      padding: 10vh 20px 20px;
+      overflow-y: auto;
     }
     
     .main-title {
-      font-size: clamp(36px, 10vw, 64px); font-weight: bold; color: #ffd700;
+      font-size: clamp(28px, 8vw, 48px); font-weight: bold; color: #ffd700;
       text-shadow: 0 0 30px #ff6b00, 0 0 60px #ff00ff;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
       animation: glow 2s ease-in-out infinite alternate;
       text-align: center;
     }
@@ -52,37 +60,37 @@
     }
     
     .sub-title {
-      font-size: clamp(14px, 4vw, 20px); color: #00ffff;
-      margin-bottom: 30px;
+      font-size: clamp(12px, 3vw, 16px); color: #00ffff;
+      margin-bottom: 15px;
       text-shadow: 0 0 20px #00ffff;
     }
     
     .info-box {
       background: rgba(255,255,255,0.1);
       border: 1px solid rgba(255,215,0,0.3);
-      border-radius: 15px;
-      padding: 20px 25px;
-      margin-bottom: 15px;
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 10px;
       color: #fff;
-      max-width: 90vw;
-      width: 400px;
+      max-width: 85vw;
+      width: 340px;
     }
     
     .info-box h3 {
       color: #ffd700;
-      margin-bottom: 12px;
-      font-size: 16px;
+      margin-bottom: 8px;
+      font-size: 14px;
     }
     
     .info-box p {
-      margin: 6px 0;
-      font-size: 13px;
+      margin: 4px 0;
+      font-size: 11px;
       color: rgba(255,255,255,0.8);
     }
     
     .start-btn {
-      padding: 15px 50px;
-      font-size: 20px; font-weight: bold;
+      padding: 12px 40px;
+      font-size: 18px; font-weight: bold;
       color: #1a1a4e;
       background: linear-gradient(45deg, #ffd700, #ff6b00);
       border: none;
@@ -90,7 +98,8 @@
       cursor: pointer;
       box-shadow: 0 0 30px rgba(255,215,0,0.5);
       transition: all 0.3s;
-      margin-top: 10px;
+      margin-top: 15px;
+      margin-bottom: 20px;
     }
     
     .start-btn:hover, .start-btn:active {
@@ -242,31 +251,37 @@
       transition: none;
     }
     
-    /* 加速按钮 */
-    .boost-btn {
+    /* 手机控制按钮组 */
+    .mobile-controls {
       position: absolute;
-      right: 30px;
-      bottom: 100px;
-      width: 80px;
-      height: 80px;
+      right: 15px;
+      bottom: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: auto;
+      z-index: 10;
+    }
+    
+    .boost-btn {
+      width: 65px;
+      height: 65px;
       border-radius: 50%;
       background: linear-gradient(135deg, #ff6600, #ff3300);
       border: 3px solid rgba(255,100,0,0.5);
       color: #fff;
-      font-size: 28px;
+      font-size: 22px;
       display: flex;
       align-items: center;
       justify-content: center;
-      pointer-events: auto;
-      z-index: 10;
-      box-shadow: 0 0 30px rgba(255,100,0,0.4);
+      box-shadow: 0 0 20px rgba(255,100,0,0.4);
       user-select: none;
       -webkit-user-select: none;
     }
     
     .boost-btn:active {
       transform: scale(0.95);
-      box-shadow: 0 0 50px rgba(255,100,0,0.8);
+      box-shadow: 0 0 35px rgba(255,100,0,0.8);
     }
     
     .boost-btn.active {
@@ -275,22 +290,17 @@
     
     /* 攻击按钮 */
     .attack-btn {
-      position: absolute;
-      right: 30px;
-      bottom: 200px;
-      width: 70px;
-      height: 70px;
+      width: 65px;
+      height: 65px;
       border-radius: 50%;
       background: linear-gradient(135deg, #ff0000, #990000);
       border: 3px solid rgba(255,0,0,0.5);
       color: #fff;
-      font-size: 28px;
+      font-size: 22px;
       display: none;
       align-items: center;
       justify-content: center;
-      pointer-events: auto;
-      z-index: 10;
-      box-shadow: 0 0 30px rgba(255,0,0,0.4);
+      box-shadow: 0 0 20px rgba(255,0,0,0.4);
       user-select: none;
       -webkit-user-select: none;
       cursor: pointer;
@@ -298,12 +308,12 @@
     
     .attack-btn:active {
       transform: scale(0.95);
-      box-shadow: 0 0 50px rgba(255,0,0,0.8);
+      box-shadow: 0 0 35px rgba(255,0,0,0.8);
     }
     
     @keyframes boostPulse {
-      0%, 100% { box-shadow: 0 0 30px rgba(255,100,0,0.6); }
-      50% { box-shadow: 0 0 50px rgba(255,150,0,0.9); }
+      0%, 100% { box-shadow: 0 0 20px rgba(255,100,0,0.6); }
+      50% { box-shadow: 0 0 35px rgba(255,150,0,0.9); }
     }
     
     /* 控制按钮 */
@@ -407,13 +417,24 @@
 
     /* 设备适配 */
     @media (min-width: 768px) {
-      .joystick-area { display: none; }
-      .boost-btn { display: none; }
-      .rotate-btn { display: none; }
+      .joystick-area { display: none !important; }
+      .mobile-controls { display: none !important; }
+      .rotate-btn { display: none !important; }
     }
     
     @media (max-width: 767px) {
       .hints { display: none; }
+      .top-stats { 
+        top: 10px; 
+        gap: 5px;
+        padding: 0 10px;
+      }
+      .stat-item {
+        padding: 5px 8px;
+        min-width: 50px;
+      }
+      .stat-value { font-size: 14px; }
+      .stat-label { font-size: 9px; }
     }
     
     .hints {
@@ -429,6 +450,13 @@
   </style>
 </head>
 <body>
+  <!-- 横屏提示 -->
+  <div class="orientation-hint" id="orientation-hint">
+    <div class="rotate-icon">📱</div>
+    <p>请旋转手机至横屏</p>
+    <p>以获得最佳游戏体验</p>
+  </div>
+  
   <div id="game-container">
     <canvas id="canvas"></canvas>
     
@@ -489,11 +517,11 @@
         <div class="joystick-stick" id="joystick-stick"></div>
       </div>
       
-      <!-- 加速按钮 (仅手机显示) -->
-      <div class="boost-btn" id="boost-btn">🔥</div>
-      
-      <!-- 攻击按钮 (仅手机显示，有BOSS时显示) -->
-      <div class="attack-btn" id="attack-btn" style="display: none;">⚔️</div>
+      <!-- 手机控制按钮组 -->
+      <div class="mobile-controls" id="mobile-controls">
+        <div class="attack-btn" id="attack-btn">⚔️</div>
+        <div class="boost-btn" id="boost-btn">🔥</div>
+      </div>
 
       <!-- 横竖屏切换 (仅手机显示) -->
       <div class="rotate-btn" id="rotate-btn" onclick="toggleOrientation()">🔄</div>
