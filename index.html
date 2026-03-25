@@ -137,6 +137,49 @@
       display: none;
     }
     
+    .difficulty-indicator {
+      background: linear-gradient(45deg, #6600ff, #9900cc);
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 12px;
+    }
+    
+    .shield-indicator {
+      background: linear-gradient(45deg, #00ff88, #00cc66);
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 12px;
+    }
+    
+    .boss-health-bar {
+      position: absolute;
+      top: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 20px;
+      background: rgba(0,0,0,0.6);
+      border: 2px solid #ff0000;
+      border-radius: 10px;
+      overflow: hidden;
+      display: none;
+    }
+    
+    .boss-health-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ff0000, #ff6600);
+      transition: width 0.3s ease;
+    }
+    
+    @keyframes shieldFlash {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); filter: brightness(1.5); }
+    }
+    
     @keyframes pulse {
       0%, 100% { transform: scale(1); }
       50% { transform: scale(1.05); }
@@ -161,15 +204,18 @@
       50% { transform: translateX(-50%) scale(1.1); }
     }
     
-    /* 虚拟操纵杆 */
+    /* 虚拟操纵杆 - 浮动式 */
     .joystick-area {
-      position: absolute;
-      left: 20px;
-      bottom: 100px;
-      width: 120px;
-      height: 120px;
-      pointer-events: auto;
+      position: fixed;
+      width: 140px;
+      height: 140px;
+      pointer-events: none;
       z-index: 10;
+      display: none; /* 默认隐藏，触摸时显示 */
+    }
+    
+    .joystick-area.active {
+      display: block;
     }
     
     .joystick-base {
@@ -177,20 +223,22 @@
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: rgba(255,255,255,0.1);
-      border: 2px solid rgba(255,215,0,0.3);
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,215,0,0.4);
+      box-shadow: 0 0 30px rgba(255,215,0,0.2);
+      backdrop-filter: blur(4px);
     }
     
     .joystick-stick {
       position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 55px;
+      height: 55px;
       border-radius: 50%;
       background: linear-gradient(135deg, #ffd700, #ff6b00);
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: 0 0 20px rgba(255,215,0,0.5);
+      box-shadow: 0 0 25px rgba(255,215,0,0.6), inset 0 2px 5px rgba(255,255,255,0.3);
       transition: none;
     }
     
@@ -223,6 +271,34 @@
     
     .boost-btn.active {
       animation: boostPulse 0.3s infinite;
+    }
+    
+    /* 攻击按钮 */
+    .attack-btn {
+      position: absolute;
+      right: 30px;
+      bottom: 200px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff0000, #990000);
+      border: 3px solid rgba(255,0,0,0.5);
+      color: #fff;
+      font-size: 28px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      z-index: 10;
+      box-shadow: 0 0 30px rgba(255,0,0,0.4);
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+    }
+    
+    .attack-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 50px rgba(255,0,0,0.8);
     }
     
     @keyframes boostPulse {
@@ -365,13 +441,15 @@
         <h3>🎮 操作说明</h3>
         <p>🖱️ 鼠标/操纵杆 - 控制飞行方向</p>
         <p>🔥 左键/加速按钮 - 加速飞行</p>
+        <p>⚔️ Z键/攻击按钮 - 攻击BOSS</p>
         <p>⌨️ 空格/暂停按钮 - 暂停</p>
       </div>
       
       <div class="info-box">
         <h3>✨ 游戏特色</h3>
         <p>🐲 霸气东方神龙模型</p>
-        <p>👹 50分后出现BOSS</p>
+        <p>👹 50分后出现BOSS，可攻击击败</p>
+        <p>🛡️ 吃食物获得护盾抵挡伤害</p>
         <p>🔥 吃食物变长变强</p>
       </div>
       
@@ -394,6 +472,13 @@
           <div class="stat-value" id="power">0%</div>
         </div>
         <div class="boost-indicator" id="boost">🔥 BOOST</div>
+        <div class="difficulty-indicator" id="difficulty">Lv.1</div>
+        <div class="shield-indicator" id="food-shield">🛡️ x0</div>
+      </div>
+      
+      <!-- BOSS血条 -->
+      <div class="boss-health-bar" id="boss-health-bar">
+        <div class="boss-health-fill" id="boss-health-fill" style="width: 100%;"></div>
       </div>
       
       <div class="boss-alert" id="boss-warning">⚠️ BOSS 出现 ⚠️</div>
@@ -406,6 +491,9 @@
       
       <!-- 加速按钮 (仅手机显示) -->
       <div class="boost-btn" id="boost-btn">🔥</div>
+      
+      <!-- 攻击按钮 (仅手机显示，有BOSS时显示) -->
+      <div class="attack-btn" id="attack-btn" style="display: none;">⚔️</div>
 
       <!-- 横竖屏切换 (仅手机显示) -->
       <div class="rotate-btn" id="rotate-btn" onclick="toggleOrientation()">🔄</div>
@@ -419,6 +507,7 @@
       <div class="hints">
         <p>🖱️ 移动鼠标控制方向</p>
         <p>🖱️ 左键按住加速</p>
+        <p>⚔️ Z键攻击BOSS</p>
         <p>⌨️ 空格暂停</p>
       </div>
     </div>
@@ -451,7 +540,16 @@
         speed: 0.15, length: 20
       },
       foods: [], boss: null, bullets: [],
-      bodySegments: []
+      bodySegments: [],
+      // 灵敏度设置 (0.3-1.0, 默认0.5降低灵敏度)
+      mouseSensitivity: 0.5,
+      // 难度系数 (随分数递增)
+      difficulty: 1.0,
+      // 食物护盾数量
+      foodShield: 0,
+      // BOSS血量
+      bossHealth: 0,
+      bossMaxHealth: 100
     };
 
     // 检测是否为触摸设备
@@ -592,6 +690,99 @@
       state.foods.push({ mesh: food, pos: pos });
     }
     
+    // 障碍物组
+    const obstacleGroup = new THREE.Group();
+    scene.add(obstacleGroup);
+    state.obstacles = [];
+    
+    function createObstacle() {
+      const obstacle = new THREE.Group();
+      
+      // 随机障碍物类型
+      const type = Math.random();
+      if (type < 0.5) {
+        // 岩石障碍
+        const rockGeo = new THREE.DodecahedronGeometry(2 + Math.random() * 2, 0);
+        const rockMat = new THREE.MeshStandardMaterial({ 
+          color: 0x666666, roughness: 0.9 
+        });
+        const rock = new THREE.Mesh(rockGeo, rockMat);
+        obstacle.add(rock);
+      } else {
+        // 能量屏障
+        const barrierGeo = new THREE.BoxGeometry(8, 1, 1);
+        const barrierMat = new THREE.MeshStandardMaterial({ 
+          color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5,
+          transparent: true, opacity: 0.7
+        });
+        const barrier = new THREE.Mesh(barrierGeo, barrierMat);
+        obstacle.add(barrier);
+      }
+      
+      return obstacle;
+    }
+    
+    function spawnObstacle() {
+      const obstacle = createObstacle();
+      const angle = (Math.random() - 0.5) * Math.PI * 0.6;
+      const radius = 10 + Math.random() * 20;
+      const dist = 60 + Math.random() * 40;
+      
+      const pos = {
+        x: state.dragon.pos.x + Math.sin(angle) * radius,
+        y: Math.max(-15, Math.min(15, (Math.random()-0.5)*20)),
+        z: state.dragon.pos.z + dist
+      };
+      
+      obstacle.position.set(pos.x, pos.y, pos.z);
+      obstacleGroup.add(obstacle);
+      state.obstacles.push({ mesh: obstacle, pos: pos, rotationSpeed: (Math.random()-0.5)*0.02 });
+    }
+    
+    function updateObstacles() {
+      // 清理远处障碍物
+      for (let i = state.obstacles.length - 1; i >= 0; i--) {
+        const obs = state.obstacles[i];
+        if (obs.pos.z - state.dragon.pos.z < -30) {
+          obstacleGroup.remove(obs.mesh);
+          state.obstacles.splice(i, 1);
+        } else {
+          // 旋转障碍物
+          obs.mesh.rotation.x += obs.rotationSpeed;
+          obs.mesh.rotation.y += obs.rotationSpeed * 0.5;
+        }
+      }
+      
+      // 根据难度调整障碍物数量
+      const maxObstacles = Math.floor(3 + state.difficulty * 2);
+      while (state.obstacles.length < maxObstacles) spawnObstacle();
+      
+      // 碰撞检测
+      for (let i = state.obstacles.length - 1; i >= 0; i--) {
+        const obs = state.obstacles[i];
+        if (obs.pos.distanceTo(state.dragon.pos) < 3.5) {
+          if (state.shield) {
+            // 护盾抵挡，销毁障碍物
+            obstacleGroup.remove(obs.mesh);
+            state.obstacles.splice(i, 1);
+            continue;
+          } else if (state.foodShield > 0) {
+            // 食物护盾抵挡，销毁障碍物
+            state.foodShield--;
+            obstacleGroup.remove(obs.mesh);
+            state.obstacles.splice(i, 1);
+            updateUI();
+            showShieldUsedEffect();
+            continue;
+          } else {
+            // 没有护盾，游戏结束
+            gameOver();
+            return;
+          }
+        }
+      }
+    }
+    
     function updateFoods() {
       for (let i = state.foods.length - 1; i >= 0; i--) {
         if (state.foods[i].pos.z - state.dragon.pos.z < -30) {
@@ -599,7 +790,9 @@
           state.foods.splice(i, 1);
         }
       }
-      while (state.foods.length < 10) spawnFood();
+      // 根据难度调整食物数量（难度越高食物越少）
+      const maxFoods = Math.max(5, Math.floor(10 - state.difficulty * 1.5));
+      while (state.foods.length < maxFoods) spawnFood();
     }
 
     // BOSS
@@ -632,20 +825,105 @@
       const boss = createBoss();
       boss.position.set(state.dragon.pos.x, state.dragon.pos.y + 10, state.dragon.pos.z + 150);
       bossGroup.add(boss);
+      
+      // 根据难度设置BOSS血量
+      state.bossMaxHealth = 50 + Math.floor(state.difficulty * 30);
+      state.bossHealth = state.bossMaxHealth;
+      
       state.boss = { mesh: boss, pos: boss.position.clone(), lastShot: 0 };
       
       document.getElementById('boss-warning').style.display = 'block';
       setTimeout(() => document.getElementById('boss-warning').style.display = 'none', 5000);
     }
     
+    // 弹幕视觉效果组
+    const bulletEffectsGroup = new THREE.Group();
+    scene.add(bulletEffectsGroup);
+    
+    // 龙的火球攻击组
+    const dragonFireGroup = new THREE.Group();
+    scene.add(dragonFireGroup);
+    state.dragonFireballs = [];
+    
     function createBullet(pos, dir) {
-      const bullet = new THREE.Mesh(
-        new THREE.SphereGeometry(0.8, 8, 8),
-        new THREE.MeshStandardMaterial({ color: 0xff00ff, emissive: 0xff00ff, emissiveIntensity: 3 })
-      );
-      bullet.position.copy(pos);
-      bulletGroup.add(bullet);
-      state.bullets.push({ mesh: bullet, pos: pos.clone(), dir: dir.clone().normalize(), speed: 0.18, homing: true });
+      // 创建弹幕组（包含核心和光晕效果）
+      const bulletGroup = new THREE.Group();
+      
+      // 核心 - 高亮球体
+      const coreGeo = new THREE.SphereGeometry(0.6, 16, 16);
+      const coreMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff, 
+        emissive: 0xff00ff, 
+        emissiveIntensity: 5,
+        metalness: 0.9,
+        roughness: 0.1
+      });
+      const core = new THREE.Mesh(coreGeo, coreMat);
+      bulletGroup.add(core);
+      
+      // 内层光晕
+      const innerGlowGeo = new THREE.SphereGeometry(1.0, 16, 16);
+      const innerGlowMat = new THREE.MeshBasicMaterial({ 
+        color: 0xff00ff, 
+        transparent: true, 
+        opacity: 0.6 
+      });
+      const innerGlow = new THREE.Mesh(innerGlowGeo, innerGlowMat);
+      bulletGroup.add(innerGlow);
+      
+      // 外层光晕
+      const outerGlowGeo = new THREE.SphereGeometry(1.5, 16, 16);
+      const outerGlowMat = new THREE.MeshBasicMaterial({ 
+        color: 0xff66ff, 
+        transparent: true, 
+        opacity: 0.3 
+      });
+      const outerGlow = new THREE.Mesh(outerGlowGeo, outerGlowMat);
+      bulletGroup.add(outerGlow);
+      
+      // 尾迹粒子
+      const trailGeo = new THREE.BufferGeometry();
+      const trailCount = 8;
+      const trailPositions = new Float32Array(trailCount * 3);
+      trailGeo.setAttribute('position', new THREE.BufferAttribute(trailPositions, 3));
+      const trailMat = new THREE.PointsMaterial({
+        color: 0xff00ff,
+        size: 0.4,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending
+      });
+      const trail = new THREE.Points(trailGeo, trailMat);
+      bulletGroup.add(trail);
+      
+      bulletGroup.position.copy(pos);
+      
+      // 让弹幕朝向飞行方向
+      const lookTarget = pos.clone().add(dir);
+      bulletGroup.lookAt(lookTarget);
+      
+      bulletGroup.add(core);
+      bulletEffectsGroup.add(bulletGroup);
+      
+      state.bullets.push({ 
+        mesh: bulletGroup, 
+        pos: pos.clone(), 
+        dir: dir.clone().normalize(), 
+        speed: 0.18, 
+        homing: true,
+        trailPositions: [],
+        spawnTime: Date.now(),
+        core: core,
+        innerGlow: innerGlow,
+        outerGlow: outerGlow,
+        trail: trail
+      });
+    }
+    
+    // 计算当前难度系数 (随分数递增)
+    function updateDifficulty() {
+      // 基础难度1.0，每50分增加0.3，最高3.0
+      state.difficulty = Math.min(3.0, 1.0 + Math.floor(state.score / 50) * 0.3);
     }
     
     function updateBoss(dt) {
@@ -654,48 +932,168 @@
       const d = state.dragon;
       const time = Date.now() * 0.001;
       
+      // 根据难度调整BOSS移动速度
+      const moveSpeed = 0.02 * state.difficulty;
       const targetX = d.pos.x + d.dir.x * 100;
       const targetZ = d.pos.z + d.dir.z * 100;
-      boss.pos.x += (targetX - boss.pos.x) * 0.02;
-      boss.pos.z += (targetZ - boss.pos.z) * 0.02;
+      boss.pos.x += (targetX - boss.pos.x) * moveSpeed;
+      boss.pos.z += (targetZ - boss.pos.z) * moveSpeed;
       boss.pos.y = d.pos.y + 15 + Math.sin(time) * 5;
       boss.mesh.position.copy(boss.pos);
       boss.mesh.lookAt(d.pos);
       
+      // 根据难度调整射击频率和模式
       const now = Date.now();
-      if (now - boss.lastShot > 800) {
+      // 基础射击间隔800ms，难度越高间隔越短，最低400ms
+      const shotInterval = Math.max(400, 800 - (state.difficulty - 1) * 200);
+      
+      if (now - boss.lastShot > shotInterval) {
         boss.lastShot = now;
         const toDragon = new THREE.Vector3().subVectors(d.pos, boss.pos).normalize();
-        for (let i = -1; i <= 1; i++) {
-          const bulletDir = toDragon.clone();
-          bulletDir.x += i * 0.2;
-          bulletDir.normalize();
-          createBullet(boss.pos.clone(), bulletDir);
+        
+        // 根据难度选择射击模式
+        if (state.difficulty >= 2.5) {
+          // 高难度：5发散射弹幕
+          for (let i = -2; i <= 2; i++) {
+            const bulletDir = toDragon.clone();
+            bulletDir.x += i * 0.15;
+            bulletDir.y += Math.sin(i * 0.5) * 0.1;
+            bulletDir.normalize();
+            createBullet(boss.pos.clone(), bulletDir);
+          }
+        } else if (state.difficulty >= 1.8) {
+          // 中等难度：3发散射+追踪
+          for (let i = -1; i <= 1; i++) {
+            const bulletDir = toDragon.clone();
+            bulletDir.x += i * 0.2;
+            bulletDir.normalize();
+            createBullet(boss.pos.clone(), bulletDir);
+          }
+          // 额外增加一个快速追踪弹
+          const fastDir = toDragon.clone();
+          fastDir.y += 0.1;
+          const fastBullet = { 
+            mesh: null, pos: boss.pos.clone(), dir: fastDir.normalize(), 
+            speed: 0.25, homing: true, spawnTime: now,
+            trailPositions: [], core: null, innerGlow: null, outerGlow: null, trail: null
+          };
+          createEnhancedBullet(fastBullet);
+        } else {
+          // 低难度：基础3发散射
+          for (let i = -1; i <= 1; i++) {
+            const bulletDir = toDragon.clone();
+            bulletDir.x += i * 0.2;
+            bulletDir.normalize();
+            createBullet(boss.pos.clone(), bulletDir);
+          }
         }
       }
     }
     
+    // 创建强化弹幕（用于高难度）
+    function createEnhancedBullet(bulletData) {
+      const bulletGroup = new THREE.Group();
+      
+      const coreGeo = new THREE.SphereGeometry(0.5, 16, 16);
+      const coreMat = new THREE.MeshStandardMaterial({ 
+        color: 0xff0000, 
+        emissive: 0xff0000, 
+        emissiveIntensity: 6
+      });
+      const core = new THREE.Mesh(coreGeo, coreMat);
+      bulletGroup.add(core);
+      
+      const glowGeo = new THREE.SphereGeometry(1.2, 16, 16);
+      const glowMat = new THREE.MeshBasicMaterial({ 
+        color: 0xff3333, transparent: true, opacity: 0.5 
+      });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      bulletGroup.add(glow);
+      
+      bulletGroup.position.copy(bulletData.pos);
+      bulletEffectsGroup.add(bulletGroup);
+      
+      bulletData.mesh = bulletGroup;
+      bulletData.core = core;
+      bulletData.innerGlow = glow;
+      bulletData.outerGlow = glow;
+      state.bullets.push(bulletData);
+    }
+    
     function updateBullets(dt) {
       const dragon = state.dragon;
+      const now = Date.now();
+      
       for (let i = state.bullets.length - 1; i >= 0; i--) {
         const b = state.bullets[i];
+        const lifeTime = (now - b.spawnTime) / 1000; // 生存时间（秒）
         
+        // 追踪逻辑
         if (b.homing) {
           const toDragon = new THREE.Vector3().subVectors(dragon.pos, b.pos).normalize();
           b.dir.lerp(toDragon, 0.03);
           b.dir.normalize();
         }
         
+        // 更新位置
         b.pos.add(b.dir.clone().multiplyScalar(b.speed * dt * 60));
         b.mesh.position.copy(b.pos);
         
-        if (!state.shield && b.pos.distanceTo(dragon.pos) < 2.5) {
-          gameOver();
-          return;
+        // 让弹幕朝向飞行方向
+        const lookTarget = b.pos.clone().add(b.dir);
+        b.mesh.lookAt(lookTarget);
+        
+        // 视觉效果动画
+        const pulse = Math.sin(now * 0.01) * 0.2 + 1; // 脉动效果
+        b.core.scale.setScalar(pulse);
+        b.innerGlow.scale.setScalar(1 + Math.sin(now * 0.008) * 0.15);
+        b.outerGlow.scale.setScalar(1 + Math.sin(now * 0.005) * 0.1);
+        
+        // 颜色渐变效果
+        const hue = (now * 0.0005) % 1;
+        const color = new THREE.Color().setHSL(0.8 + hue * 0.15, 1, 0.5);
+        b.core.material.emissive.copy(color);
+        b.innerGlow.material.color.copy(color);
+        
+        // 尾迹更新
+        b.trailPositions.unshift(b.pos.clone());
+        if (b.trailPositions.length > 8) b.trailPositions.pop();
+        
+        const trailPositions = b.trail.geometry.attributes.position.array;
+        for (let j = 0; j < b.trailPositions.length; j++) {
+          const tp = b.trailPositions[j];
+          trailPositions[j * 3] = tp.x - b.pos.x;
+          trailPositions[j * 3 + 1] = tp.y - b.pos.y;
+          trailPositions[j * 3 + 2] = tp.z - b.pos.z;
+        }
+        b.trail.geometry.attributes.position.needsUpdate = true;
+        
+        // 碰撞检测
+        if (b.pos.distanceTo(dragon.pos) < 2.5) {
+          if (state.shield) {
+            // 护盾激活时抵挡伤害
+            bulletEffectsGroup.remove(b.mesh);
+            state.bullets.splice(i, 1);
+            continue;
+          } else if (state.foodShield > 0) {
+            // 使用食物护盾抵挡伤害
+            state.foodShield--;
+            bulletEffectsGroup.remove(b.mesh);
+            state.bullets.splice(i, 1);
+            updateUI();
+            // 显示护盾消耗提示
+            showShieldUsedEffect();
+            continue;
+          } else {
+            // 没有护盾，游戏结束
+            gameOver();
+            return;
+          }
         }
         
+        // 超出范围移除
         if (b.pos.distanceTo(dragon.pos) > 200) {
-          bulletGroup.remove(b.mesh);
+          bulletEffectsGroup.remove(b.mesh);
           state.bullets.splice(i, 1);
         }
       }
@@ -719,8 +1117,9 @@
         targetX = -state.joystick.dx * 6;
         targetY = state.joystick.dy * 5;
       } else {
-        targetX = -state.mouse.x * 6;
-        targetY = state.mouse.y * 5;
+        // 应用灵敏度系数，降低默认灵敏度
+        targetX = -state.mouse.x * 6 * state.mouseSensitivity;
+        targetY = state.mouse.y * 5 * state.mouseSensitivity;
       }
       
       d.targetDir.set(targetX, targetY, 1).normalize();
@@ -767,6 +1166,9 @@
       state.score += 10;
       state.dragon.length += 2;
       
+      // 食物增加护盾数量
+      state.foodShield++;
+      
       const seg = createSegment(state.bodySegments.length, state.dragon.length);
       const last = state.bodySegments[state.bodySegments.length-1];
       const dir = last.pos.clone().sub(state.bodySegments.length>1 ? state.bodySegments[state.bodySegments.length-2].pos : state.dragon.pos).normalize();
@@ -776,6 +1178,175 @@
       state.bodySegments.push({ mesh: seg, pos: newPos.clone() });
       
       updateUI();
+    }
+    
+    // 龙发射火球攻击BOSS
+    function dragonAttack() {
+      if (!state.boss) return;
+      
+      const fireball = new THREE.Group();
+      
+      // 火球核心
+      const core = new THREE.Mesh(
+        new THREE.SphereGeometry(0.8, 16, 16),
+        new THREE.MeshStandardMaterial({ 
+          color: 0xff6600, 
+          emissive: 0xff3300, 
+          emissiveIntensity: 4 
+        })
+      );
+      fireball.add(core);
+      
+      // 火球光晕
+      const glow = new THREE.Mesh(
+        new THREE.SphereGeometry(1.5, 16, 16),
+        new THREE.MeshBasicMaterial({ 
+          color: 0xffaa00, 
+          transparent: true, 
+          opacity: 0.5 
+        })
+      );
+      fireball.add(glow);
+      
+      // 从龙头位置发射
+      const startPos = state.dragon.pos.clone();
+      startPos.y += 1;
+      fireball.position.copy(startPos);
+      
+      // 瞄准BOSS
+      const targetDir = new THREE.Vector3().subVectors(state.boss.pos, startPos).normalize();
+      
+      dragonFireGroup.add(fireball);
+      
+      state.dragonFireballs.push({
+        mesh: fireball,
+        pos: startPos,
+        dir: targetDir,
+        speed: 0.8,
+        core: core,
+        glow: glow
+      });
+    }
+    
+    // 更新龙的火球
+    function updateDragonFireballs(dt) {
+      for (let i = state.dragonFireballs.length - 1; i >= 0; i--) {
+        const fb = state.dragonFireballs[i];
+        
+        // 移动火球
+        fb.pos.add(fb.dir.clone().multiplyScalar(fb.speed * dt * 60));
+        fb.mesh.position.copy(fb.pos);
+        
+        // 旋转效果
+        fb.mesh.rotation.z += 0.2;
+        
+        // 检测是否击中BOSS
+        if (state.boss && fb.pos.distanceTo(state.boss.pos) < 5) {
+          // 击中BOSS
+          state.bossHealth -= 10; // 每次攻击造成10点伤害
+          
+          // 创建爆炸效果
+          createExplosion(fb.pos);
+          
+          // 移除火球
+          dragonFireGroup.remove(fb.mesh);
+          state.dragonFireballs.splice(i, 1);
+          
+          // 检查BOSS是否被击败
+          if (state.bossHealth <= 0) {
+            defeatBoss();
+          }
+          continue;
+        }
+        
+        // 超出范围移除
+        if (fb.pos.distanceTo(state.dragon.pos) > 200) {
+          dragonFireGroup.remove(fb.mesh);
+          state.dragonFireballs.splice(i, 1);
+        }
+      }
+    }
+    
+    // 爆炸效果
+    function createExplosion(pos) {
+      const explosion = new THREE.Group();
+      
+      for (let i = 0; i < 8; i++) {
+        const particle = new THREE.Mesh(
+          new THREE.SphereGeometry(0.3 + Math.random() * 0.3, 8, 8),
+          new THREE.MeshBasicMaterial({ 
+            color: new THREE.Color().setHSL(0.1 + Math.random() * 0.1, 1, 0.5),
+            transparent: true,
+            opacity: 0.8
+          })
+        );
+        particle.position.set(
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 3
+        );
+        explosion.add(particle);
+      }
+      
+      explosion.position.copy(pos);
+      scene.add(explosion);
+      
+      // 动画后移除
+      let scale = 1;
+      const animate = () => {
+        scale += 0.1;
+        explosion.scale.setScalar(scale);
+        explosion.children.forEach(p => {
+          p.material.opacity -= 0.05;
+        });
+        
+        if (scale < 3) {
+          requestAnimationFrame(animate);
+        } else {
+          scene.remove(explosion);
+        }
+      };
+      animate();
+    }
+    
+    // BOSS被击败
+    function defeatBoss() {
+      if (!state.boss) return;
+      
+      // 大爆炸效果
+      createExplosion(state.boss.pos);
+      
+      // 移除BOSS
+      bossGroup.remove(state.boss.mesh);
+      state.boss = null;
+      state.bossHealth = 0;
+      
+      // 奖励分数
+      state.score += 100;
+      
+      // 显示提示
+      const alert = document.getElementById('boss-warning');
+      alert.textContent = '🎉 BOSS 被击败！+100分';
+      alert.style.background = 'linear-gradient(45deg, #00ff00, #00aa00)';
+      alert.style.display = 'block';
+      setTimeout(() => {
+        alert.style.display = 'none';
+        alert.textContent = '⚠️ BOSS 出现 ⚠️';
+        alert.style.background = 'linear-gradient(45deg, #ff0000, #990000)';
+      }, 3000);
+      
+      updateUI();
+    }
+    
+    // 显示护盾消耗提示
+    function showShieldUsedEffect() {
+      const shieldEl = document.getElementById('food-shield');
+      if (shieldEl) {
+        shieldEl.style.animation = 'none';
+        setTimeout(() => {
+          shieldEl.style.animation = 'shieldFlash 0.5s ease';
+        }, 10);
+      }
     }
 
     // 相机
@@ -801,6 +1372,41 @@
       const power = Math.min(100, (state.dragon.length / 200) * 100);
       document.getElementById('power').textContent = Math.floor(power) + '%';
       document.getElementById('boost').style.display = state.boosting ? 'block' : 'none';
+      
+      // 更新难度显示
+      const diffLevel = Math.floor(state.difficulty);
+      const diffEl = document.getElementById('difficulty');
+      diffEl.textContent = 'Lv.' + diffLevel;
+      // 根据难度改变颜色
+      if (diffLevel >= 3) {
+        diffEl.style.background = 'linear-gradient(45deg, #ff0000, #990000)';
+      } else if (diffLevel >= 2) {
+        diffEl.style.background = 'linear-gradient(45deg, #ff6600, #cc3300)';
+      } else {
+        diffEl.style.background = 'linear-gradient(45deg, #6600ff, #9900cc)';
+      }
+      
+      // 更新食物护盾显示
+      const shieldEl = document.getElementById('food-shield');
+      shieldEl.textContent = '🛡️ x' + state.foodShield;
+      shieldEl.style.display = state.foodShield > 0 ? 'block' : 'none';
+      
+      // 更新BOSS血条
+      const bossHealthBar = document.getElementById('boss-health-bar');
+      const bossHealthFill = document.getElementById('boss-health-fill');
+      const attackBtn = document.getElementById('attack-btn');
+      if (state.boss && state.bossHealth > 0) {
+        bossHealthBar.style.display = 'block';
+        const healthPercent = (state.bossHealth / state.bossMaxHealth) * 100;
+        bossHealthFill.style.width = healthPercent + '%';
+        // 显示攻击按钮
+        if (isTouchDevice) {
+          attackBtn.style.display = 'flex';
+        }
+      } else {
+        bossHealthBar.style.display = 'none';
+        attackBtn.style.display = 'none';
+      }
     }
 
     // 游戏控制
@@ -813,6 +1419,21 @@
       state.dragon.length = 20;
       state.dragon.pos.set(0, 0, 0);
       state.dragon.dir.set(0, 0, 1);
+      state.difficulty = 1.0;
+      state.foodShield = 0;
+      state.bossHealth = 0;
+      
+      // 清理旧数据
+      state.obstacles.forEach(o => obstacleGroup.remove(o.mesh));
+      state.obstacles = [];
+      state.bullets.forEach(b => bulletEffectsGroup.remove(b.mesh));
+      state.bullets = [];
+      state.dragonFireballs.forEach(f => dragonFireGroup.remove(f.mesh));
+      state.dragonFireballs = [];
+      if (state.boss) {
+        bossGroup.remove(state.boss.mesh);
+        state.boss = null;
+      }
       
       initBody();
       updateUI();
@@ -893,41 +1514,29 @@
       }
     }
 
-    // 虚拟操纵杆
+    // 虚拟操纵杆 - 浮动跟随式
     const joystick = document.getElementById('joystick');
     const joystickStick = document.getElementById('joystick-stick');
     let joystickCenter = { x: 0, y: 0 };
-    const maxJoystickDist = 35;
+    const maxJoystickDist = 45; // 增大活动半径
+    let joystickTouchId = null;
 
-    function initJoystick() {
-      const rect = joystick.getBoundingClientRect();
-      joystickCenter = {
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2
-      };
+    function showJoystick(x, y) {
+      // 在手指按下位置显示摇杆
+      joystick.style.left = (x - 70) + 'px';
+      joystick.style.top = (y - 70) + 'px';
+      joystick.classList.add('active');
+      joystickCenter = { x: x, y: y };
     }
 
-    joystick.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      initJoystick();
-      state.joystick.active = true;
-      updateJoystick(e.touches[0]);
-    }, { passive: false });
-
-    joystick.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      if (state.joystick.active) {
-        updateJoystick(e.touches[0]);
-      }
-    }, { passive: false });
-
-    joystick.addEventListener('touchend', (e) => {
-      e.preventDefault();
+    function hideJoystick() {
+      joystick.classList.remove('active');
       state.joystick.active = false;
       state.joystick.dx = 0;
       state.joystick.dy = 0;
       joystickStick.style.transform = 'translate(-50%, -50%)';
-    });
+      joystickTouchId = null;
+    }
 
     function updateJoystick(touch) {
       const dx = touch.clientX - joystickCenter.x;
@@ -942,10 +1551,82 @@
       joystickStick.style.transform = `translate(calc(-50% + ${stickX}px), calc(-50% + ${stickY}px))`;
       
       // 归一化到 -1 到 1
-      // 注意：屏幕向右 → dx正 → 角色向右；屏幕向上 → dy负 → 角色向上
-      state.joystick.dx = stickX / maxJoystickDist;          // 右正左负，直接对应X轴
-      state.joystick.dy = -(stickY / maxJoystickDist);       // 屏幕Y向下为正，取反后上正下负
+      state.joystick.dx = stickX / maxJoystickDist;
+      state.joystick.dy = -(stickY / maxJoystickDist);
     }
+
+    // 在游戏区域监听触摸事件（左半边屏幕用于摇杆）
+    const gameContainer = document.getElementById('game-container');
+    
+    gameContainer.addEventListener('touchstart', (e) => {
+      if (!state.playing || state.paused) return;
+      
+      // 找到左半边的触摸点
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        // 只在左半边屏幕(0-50%)且不在UI按钮区域触发摇杆
+        if (touch.clientX < window.innerWidth * 0.5 && !joystickTouchId) {
+          // 检查是否点击了按钮区域
+          const boostBtn = document.getElementById('boost-btn');
+          const pauseBtn = document.getElementById('pause-btn');
+          const shieldBtn = document.getElementById('shield-btn');
+          
+          const boostRect = boostBtn.getBoundingClientRect();
+          const pauseRect = pauseBtn.getBoundingClientRect();
+          const shieldRect = shieldBtn.getBoundingClientRect();
+          
+          // 如果触摸点在按钮上，不触发摇杆
+          const inBoost = touch.clientX >= boostRect.left && touch.clientX <= boostRect.right &&
+                         touch.clientY >= boostRect.top && touch.clientY <= boostRect.bottom;
+          const inPause = touch.clientX >= pauseRect.left && touch.clientX <= pauseRect.right &&
+                         touch.clientY >= pauseRect.top && touch.clientY <= pauseRect.bottom;
+          const inShield = touch.clientX >= shieldRect.left && touch.clientX <= shieldRect.right &&
+                          touch.clientY >= shieldRect.top && touch.clientY <= shieldRect.bottom;
+          
+          if (!inBoost && !inPause && !inShield) {
+            e.preventDefault();
+            joystickTouchId = touch.identifier;
+            state.joystick.active = true;
+            showJoystick(touch.clientX, touch.clientY);
+            updateJoystick(touch);
+          }
+        }
+      }
+    }, { passive: false });
+
+    gameContainer.addEventListener('touchmove', (e) => {
+      if (!state.playing || state.paused || !joystickTouchId) return;
+      
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === joystickTouchId) {
+          e.preventDefault();
+          updateJoystick(touch);
+          break;
+        }
+      }
+    }, { passive: false });
+
+    gameContainer.addEventListener('touchend', (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === joystickTouchId) {
+          e.preventDefault();
+          hideJoystick();
+          break;
+        }
+      }
+    });
+
+    gameContainer.addEventListener('touchcancel', (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        if (touch.identifier === joystickTouchId) {
+          hideJoystick();
+          break;
+        }
+      }
+    });
 
     // 加速按钮
     const boostBtn = document.getElementById('boost-btn');
@@ -961,12 +1642,47 @@
       state.boosting = false;
       boostBtn.classList.remove('active');
     });
+    
+    // 攻击按钮
+    const attackBtn = document.getElementById('attack-btn');
+    
+    attackBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (state.boss) {
+        dragonAttack();
+        attackBtn.style.transform = 'scale(0.9)';
+      }
+    }, { passive: false });
+    
+    attackBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      attackBtn.style.transform = 'scale(1)';
+    });
+    
+    // 桌面端：空格键攻击BOSS
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePause();
+      }
+      if (e.code === 'KeyZ' || e.code === 'KeyX') {
+        e.preventDefault();
+        if (state.boss) {
+          dragonAttack();
+        }
+      }
+    });
 
     // 鼠标事件 (桌面)
     document.addEventListener('mousemove', (e) => {
       if (!state.playing || state.paused || state.joystick.active) return;
-      state.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      state.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      // 计算归一化的鼠标位置 (-1 到 1)
+      const rawX = (e.clientX / window.innerWidth) * 2 - 1;
+      const rawY = -(e.clientY / window.innerHeight) * 2 + 1;
+      
+      // 应用平滑处理，减少抖动
+      state.mouse.x += (rawX - state.mouse.x) * 0.3;
+      state.mouse.y += (rawY - state.mouse.y) * 0.3;
     });
     
     document.addEventListener('mousedown', (e) => {
@@ -976,13 +1692,6 @@
     
     document.addEventListener('mouseup', (e) => {
       if (e.button === 0) state.boosting = false;
-    });
-    
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        togglePause();
-      }
     });
     
     document.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -1004,16 +1713,23 @@
       lastTime = now;
       
       if (!state.paused) {
+        // 更新难度
+        updateDifficulty();
+        
         updateDragon(dt);
         checkCollisions();
         updateFoods();
+        updateObstacles();
         
         if (starsMesh) starsMesh.position.copy(state.dragon.pos);
         
-        if (state.score >= 50 && !state.boss) spawnBoss();
+        // 根据难度调整BOSS出现条件（难度越高出现越早）
+        const bossThreshold = Math.max(30, 50 - Math.floor((state.difficulty - 1) * 10));
+        if (state.score >= bossThreshold && !state.boss) spawnBoss();
         
         updateBoss(dt);
         updateBullets(dt);
+        updateDragonFireballs(dt);
         updateUI();
         
         const t = Date.now() * 0.001;
