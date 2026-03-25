@@ -21,64 +21,142 @@
       position: fixed; top: 0; left: 0; z-index: 1;
     }
     
-    /* 电脑端：垂直布局（默认） */
+    /* 开始界面 - 沉浸式，文字放两边 */
     #start-screen {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      display: flex; flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
       background: linear-gradient(135deg, #1a0a4e 0%, #0a0a2e 50%, #000 100%);
-      z-index: 1000; padding: 20px;
+      z-index: 1000;
+      padding: 40px 30px;
     }
-    .left-panel, .right-panel {
+    
+    /* 左侧面板 */
+    .left-panel {
+      width: 20%;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      gap: 20px;
     }
-    .main-title { font-size: 36px; font-weight: bold; color: #ffd700; margin-bottom: 10px; text-align: center; }
-    .sub-title { font-size: 14px; color: #00ffff; margin-bottom: 30px; }
-    .start-btn { padding: 18px 60px; font-size: 22px; font-weight: bold; color: #1a1a4e; background: linear-gradient(45deg, #ffd700, #ff6b00); border: none; border-radius: 50px; cursor: pointer; margin-top: 20px; -webkit-tap-highlight-color: transparent; position: relative; z-index: 100; }
+    .main-title { 
+      font-size: 24px; 
+      font-weight: bold; 
+      color: #ffd700; 
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 6px;
+      text-shadow: 0 0 20px rgba(255,215,0,0.5);
+    }
+    .sub-title { 
+      font-size: 12px; 
+      color: #00ffff; 
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 2px;
+    }
+    .start-btn { 
+      padding: 20px 15px; 
+      font-size: 18px; 
+      font-weight: bold; 
+      color: #1a1a4e; 
+      background: linear-gradient(45deg, #ffd700, #ff6b00); 
+      border: none; 
+      border-radius: 30px; 
+      cursor: pointer; 
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 4px;
+      box-shadow: 0 0 30px rgba(255,215,0,0.5);
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      z-index: 100;
+    }
     .start-btn:active { transform: scale(0.95); }
-    .info-box { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 15px 20px; margin-bottom: 15px; color: #fff; width: 90%; max-width: 400px; }
-    .info-box h3 { color: #ffd700; margin-bottom: 10px; font-size: 16px; }
-    .info-box p { margin: 5px 0; font-size: 13px; color: rgba(255,255,255,0.8); }
-    .settings-panel { background: rgba(0,0,0,0.8); border: 1px solid rgba(255,215,0,0.4); border-radius: 15px; padding: 20px; margin-bottom: 15px; width: 90%; max-width: 400px; }
-    .settings-panel h3 { color: #ffd700; margin-bottom: 15px; font-size: 16px; text-align: center; }
-    .setting-item { display: flex; align-items: center; justify-content: space-between; margin: 12px 0; }
-    .setting-label { color: #fff; font-size: 14px; }
-    .setting-slider { width: 150px; height: 8px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 4px; outline: none; }
-    .setting-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: linear-gradient(45deg, #ffd700, #ff6b00); border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
-    .setting-value { color: #00ffff; font-size: 14px; min-width: 40px; text-align: right; }
     
-    /* 手机端：强制横屏左右布局 */
-    @media (max-width: 767px) {
+    /* 右侧面板 - 设置 */
+    .right-panel {
+      width: 22%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 15px;
+    }
+    .settings-panel { 
+      background: rgba(0,0,0,0.7); 
+      border: 1px solid rgba(255,215,0,0.3); 
+      border-radius: 12px; 
+      padding: 15px; 
+      width: 100%;
+    }
+    .settings-panel h3 { 
+      color: #ffd700; 
+      margin-bottom: 12px; 
+      font-size: 14px; 
+      text-align: center;
+      letter-spacing: 2px;
+    }
+    .setting-item { 
+      display: flex; 
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 10px 0;
+      gap: 5px;
+    }
+    .setting-label { 
+      color: #fff; 
+      font-size: 11px;
+      letter-spacing: 1px;
+    }
+    .setting-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 8px;
+    }
+    .setting-slider { 
+      flex: 1;
+      height: 6px; 
+      -webkit-appearance: none; 
+      background: rgba(255,255,255,0.2); 
+      border-radius: 3px; 
+      outline: none; 
+    }
+    .setting-slider::-webkit-slider-thumb { 
+      -webkit-appearance: none; 
+      width: 16px; 
+      height: 16px; 
+      background: linear-gradient(45deg, #ffd700, #ff6b00); 
+      border-radius: 50%; 
+      cursor: pointer; 
+      box-shadow: 0 0 8px rgba(255,215,0,0.5); 
+    }
+    .setting-value { 
+      color: #00ffff; 
+      font-size: 11px; 
+      min-width: 30px;
+      text-align: right;
+    }
+    
+    /* 电脑端适配 */
+    @media (min-width: 768px) {
       #start-screen {
-        flex-direction: row !important;
-        padding: 10px;
+        padding: 60px 80px;
       }
-      .left-panel {
-        width: 40%;
-        height: 100%;
-        padding: 10px;
-      }
-      .right-panel {
-        width: 60%;
-        height: 100%;
-        padding: 10px;
-        gap: 15px;
-      }
-      .main-title { font-size: 28px; margin-bottom: 5px; }
-      .sub-title { font-size: 12px; margin-bottom: 20px; }
-      .start-btn { padding: 15px 40px; font-size: 20px; margin-top: 10px; }
-      .info-box { padding: 12px 15px; margin-bottom: 10px; }
-      .info-box h3 { font-size: 14px; margin-bottom: 8px; }
-      .info-box p { font-size: 11px; margin: 4px 0; }
-      .settings-panel { padding: 12px; margin-bottom: 10px; }
-      .settings-panel h3 { font-size: 14px; margin-bottom: 10px; }
-      .setting-item { margin: 8px 0; }
+      .left-panel { width: 15%; }
+      .right-panel { width: 18%; }
+      .main-title { font-size: 32px; }
+      .sub-title { font-size: 14px; }
+      .start-btn { padding: 25px 18px; font-size: 20px; }
+      .settings-panel { padding: 20px; }
+      .settings-panel h3 { font-size: 16px; }
       .setting-label { font-size: 12px; }
-      .setting-slider { width: 100px; height: 8px; }
-      .setting-value { font-size: 12px; min-width: 35px; }
+      .setting-value { font-size: 12px; }
     }
     
     /* 游戏UI */
@@ -188,10 +266,79 @@
     }
     #rotate-hint p { font-size: 18px; color: #ffd700; }
     
-    /* 手机端显示控制 */
+    /* 手机端：左右分栏布局，避开中间网址栏 */
     @media (max-width: 767px) {
       .mobile-controls { display: flex !important; }
       .joystick-container { display: block !important; }
+      
+      #start-screen {
+        flex-direction: row !important;
+        justify-content: space-between;
+        padding: 20px 15px;
+      }
+      
+      /* 左侧信息 - 放左边 */
+      .left-panel {
+        width: 22%;
+        align-items: flex-start;
+        text-align: left;
+        padding: 0;
+      }
+      .left-panel .main-title { 
+        font-size: 16px; 
+        margin-bottom: 3px;
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        letter-spacing: 2px;
+      }
+      .left-panel .sub-title { 
+        font-size: 8px; 
+        margin-bottom: 10px;
+        writing-mode: vertical-rl;
+      }
+      
+      /* 开始按钮 - 放左下角 */
+      .start-btn { 
+        position: absolute;
+        left: 15px;
+        bottom: 30px;
+        padding: 12px 20px; 
+        font-size: 14px; 
+        margin: 0;
+      }
+      
+      /* 右侧设置 - 放右边 */
+      .right-panel {
+        width: 25%;
+        align-items: flex-end;
+        padding: 0;
+      }
+      .right-panel .settings-panel { 
+        padding: 10px; 
+        width: 100%;
+      }
+      .right-panel .settings-panel h3 { 
+        font-size: 10px; 
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+      }
+      .right-panel .setting-item { 
+        margin: 6px 0; 
+      }
+      .right-panel .setting-label { 
+        font-size: 9px; 
+      }
+      .right-panel .setting-slider { 
+        height: 5px; 
+      }
+      .right-panel .setting-slider::-webkit-slider-thumb { 
+        width: 14px; 
+        height: 14px; 
+      }
+      .right-panel .setting-value { 
+        font-size: 9px; 
+        min-width: 25px;
+      }
     }
     
     /* 竖屏时显示提示 */
@@ -219,27 +366,31 @@
         <button class="start-btn" id="start-btn">开始游戏</button>
       </div>
       
-      <!-- 右侧：操作说明和设置 -->
+      <!-- 右侧：设置 -->
       <div class="right-panel">
-        <div class="info-box">
-          <h3>🎮 操作说明</h3>
-          <p>🕹️ 左下角摇杆 - 控制方向</p>
-          <p>🔥 右下角按钮 - 加速</p>
-          <p>⚔️ 攻击按钮 - 攻击BOSS</p>
-        </div>
-        
         <!-- 设置面板 -->
         <div class="settings-panel">
           <h3>⚙️ 游戏设置</h3>
           <div class="setting-item">
             <span class="setting-label">操纵灵敏度</span>
-            <input type="range" class="setting-slider" id="sensitivity-slider" min="0.5" max="3" step="0.1" value="1.5">
-            <span class="setting-value" id="sensitivity-value">1.5</span>
+            <div class="setting-row">
+              <input type="range" class="setting-slider" id="sensitivity-slider" min="0.5" max="3" step="0.1" value="1.5">
+              <span class="setting-value" id="sensitivity-value">1.5</span>
+            </div>
           </div>
           <div class="setting-item">
             <span class="setting-label">画质等级</span>
-            <input type="range" class="setting-slider" id="quality-slider" min="1" max="3" step="1" value="2">
-            <span class="setting-value" id="quality-value">中</span>
+            <div class="setting-row">
+              <input type="range" class="setting-slider" id="quality-slider" min="1" max="3" step="1" value="2">
+              <span class="setting-value" id="quality-value">中</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <span class="setting-label">游戏难度</span>
+            <div class="setting-row">
+              <input type="range" class="setting-slider" id="difficulty-slider" min="1" max="3" step="1" value="1">
+              <span class="setting-value" id="difficulty-value">简单</span>
+            </div>
           </div>
         </div>
       </div>
@@ -277,7 +428,8 @@
       mouse: { x: 0, y: 0 }, boosting: false,
       dragon: { pos: new THREE.Vector3(0,0,0), dir: new THREE.Vector3(0,0,1), targetDir: new THREE.Vector3(0,0,1), speed: 0.15, length: 20 },
       foods: [], obstacles: [], bodySegments: [], difficulty: 1,
-      sensitivity: 1.5, quality: 2
+      sensitivity: 1.5, quality: 2, difficultyLevel: 1,
+      obstacleSpawnRate: 0.02, foodSpawnRate: 0.05
     };
 
     // Three.js 初始化
@@ -614,7 +766,14 @@
       state.foods.forEach(f => foodGroup.remove(f.mesh)); state.foods = [];
       state.obstacles.forEach(o => obstacleGroup.remove(o.mesh)); state.obstacles = [];
       initBody(); updateUI();
-      initJoystick(); // 初始化摇杆位置
+      initJoystick();
+      
+      // 强制重新渲染一次
+      resize();
+      camera.position.set(0, 8, 20);
+      camera.lookAt(0, 0, 0);
+      renderer.render(scene, camera);
+      
       lastTime = performance.now();
       gameLoop();
     }
@@ -706,6 +865,33 @@
       qualityValue.textContent = qualityLabels[state.quality];
       updateQuality();
     });
+    
+    // 难度设置
+    const difficultySlider = document.getElementById('difficulty-slider');
+    const difficultyValue = document.getElementById('difficulty-value');
+    const difficultyLabels = {1: '简单', 2: '中等', 3: '困难'};
+    difficultySlider.addEventListener('input', function() {
+      state.difficultyLevel = parseInt(this.value);
+      difficultyValue.textContent = difficultyLabels[state.difficultyLevel];
+      updateDifficultySettings();
+    });
+    
+    function updateDifficultySettings() {
+      // 根据难度调整游戏参数
+      if (state.difficultyLevel === 1) {
+        state.dragon.speed = 0.12;
+        state.obstacleSpawnRate = 0.015;
+        state.foodSpawnRate = 0.06;
+      } else if (state.difficultyLevel === 2) {
+        state.dragon.speed = 0.18;
+        state.obstacleSpawnRate = 0.025;
+        state.foodSpawnRate = 0.05;
+      } else {
+        state.dragon.speed = 0.25;
+        state.obstacleSpawnRate = 0.04;
+        state.foodSpawnRate = 0.04;
+      }
+    }
     
     function updateQuality() {
       if (state.quality === 1) {
@@ -825,8 +1011,8 @@
       if (!state.paused) {
         updateDragon(dt);
         checkCollisions();
-        if (Math.random() < 0.05) spawnFood();
-        if (Math.random() < 0.02) spawnObstacle();
+        if (Math.random() < state.foodSpawnRate) spawnFood();
+        if (Math.random() < state.obstacleSpawnRate) spawnObstacle();
         starsMesh.position.copy(state.dragon.pos);
       }
       updateCamera();
@@ -834,11 +1020,20 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // 初始渲染
+    // 初始渲染 - 确保龙在视野内
     initBody();
-    camera.position.set(0, 8, 20);
-    camera.lookAt(0, 0, 0);
+    
+    // 设置相机位置，确保能看到龙
+    function resetCamera() {
+      camera.position.set(0, 5, 15);
+      camera.lookAt(0, 0, 0);
+    }
+    resetCamera();
+    
+    // 多次渲染确保显示
     renderer.render(scene, camera);
+    setTimeout(() => renderer.render(scene, camera), 100);
+    setTimeout(() => renderer.render(scene, camera), 500);
   </script>
 </body>
 </html>
